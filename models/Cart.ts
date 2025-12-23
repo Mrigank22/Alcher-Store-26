@@ -13,7 +13,7 @@ const CartItemSchema = new Schema(
 
 const CartSchema = new Schema(
     {
-        user:{type:Schema.Types.ObjectId,ref:"User",required:true,unique:true},
+        user_email: {type: String,required: true,unique: true,index: true},
         items:{type:[CartItemSchema],default:[]},
         total_quantity:{type:Number,default:0},
         total_price:{type:Number,default:0},
