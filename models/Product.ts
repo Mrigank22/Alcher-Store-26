@@ -1,39 +1,87 @@
-import mongoose, { Schema, models } from "mongoose";
+import mongoose from "mongoose";
 
-const Review = new Schema(
+/* ================= Variant Schema ================= */
+const variantSchema = new mongoose.Schema(
   {
-    user: { type: Schema.Types.ObjectId, ref: "User" },
-    review_content: { type: String },
-    rating: { type: Number, min: 1, max: 5 },
+    size: {
+      type: String,
+      enum: ["S", "M", "L", "XL"],
+      required: false,
+    },
+
+    color: {
+      type: String,
+      required: false,
+    },
+
+    stock: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+  },
+  { _id: false }
+);
+
+/* ================= Product Schema ================= */
+const productSchema = new mongoose.Schema(
+  {
+    product_id: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+
+    /* Basic info */
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    price: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    description: {
+      type: String,
+      trim: true,
+      default: "Alcher merch",
+    },
+
+    imageUrl: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    /* Flags */
+    hasSize: {
+      type: Boolean,
+      default: false,
+    },
+
+    hasColor: {
+      type: Boolean,
+      default: false,
+    },
+
+    /* Variants */
+    variants: {
+      type: [variantSchema],
+      required: true,
+      validate: {
+        validator: (v: any[]) => v.length > 0,
+        message: "At least one variant is required",
+      },
+    },
   },
   { timestamps: true }
 );
 
-const Stock = new Schema({
-  size: { type: String, required: true }, 
-  quantity: { type: Number, required: true },
-});
-
-
-const Product = new Schema({
-  product_id: { type: String, required: true, unique: true },
-  name: { type: String, required: true },
-  img: { type: String, required: true },
-  price: { type: Number, required: true },
-
-  size_boolean: { type: Boolean, default: false },
-
-
-  stock: {
-    type: [Stock],
-    default: [],
-  },
-
-  
-  stock_quantity: {
-    type: Number,
-    default: 0,
-  },
-});
-
-export default models.Product || mongoose.model("Product", Product);
+export default mongoose.models.Product ||
+  mongoose.model("Product", productSchema);

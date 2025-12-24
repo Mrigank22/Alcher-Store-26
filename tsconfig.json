@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "models/Product.ts", "app/api/admin/product/route.ts"  ],
   "exclude": ["node_modules"]
 }

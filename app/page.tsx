@@ -3,83 +3,93 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import AddProduct from "@/components/AddProduct";
+
+/* ================= TYPES ================= */
+
+type Variant = {
+  size?: string;
+  color?: string;
+  stock: number;
+};
 
 interface Product {
-  _id: string;
+  _id: string; // Mongo internal
   product_id: string;
   name: string;
-  img: string;
+  imageUrl: string;
   price: number;
-  size_boolean: boolean;
-  stock: { size: string; quantity: number }[];
-  stock_quantity: number;
+  hasSize: boolean;
+  hasColor: boolean;
+  variants: Variant[];
 }
+
+/* ================= PAGE ================= */
 
 export default function Home() {
   const router = useRouter();
   const { data: session } = useSession();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+
+
+  /* ================= FETCH ================= */
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  const fetchProducts = async () => {
+  async function fetchProducts() {
     try {
-      // Fetch products from your existing product API
-      const response = await fetch("/api/admin/product");
-      const result = await response.json();
-      
-      // Handle both response formats
-      if (result.success && result.data) {
-        setProducts(result.data);
-      } else if (result.value && Array.isArray(result.value)) {
-        setProducts(result.value);
-      } else if (Array.isArray(result)) {
-        setProducts(result);
+      const res = await fetch("/api/admin/product");
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        setProducts(data);
+      } else if (data?.data && Array.isArray(data.data)) {
+        setProducts(data.data);
       } else {
-        console.error("Unexpected response format:", result);
         setProducts([]);
       }
-    } catch (error) {
-      console.error("Error fetching products:", error);
+    } catch (err) {
+      console.error("Fetch products error:", err);
       setProducts([]);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const addToCart = async (productId: string, quantity: number = 1) => {
-    if (!session || !session.user?.email) {
-      alert("Please login to add items to cart");
+  /* ================= ADD TO CART ================= */
+
+  async function addToCart(product: Product) {
+    if (!session?.user?.email) {
+      alert("Please login first");
       router.push("/login");
       return;
     }
 
-    try {
-      const response = await fetch("/api/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email: session.user.email,
-          product: productId, 
-          quantity 
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        alert("✅ Item added to cart!");
-      } else {
-        alert(result.error || "Failed to add to cart");
-      }
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      alert("Failed to add to cart");
+    const variantIndex = product.variants.findIndex((v) => v.stock > 0);
+    if (variantIndex === -1) {
+      alert("Out of stock");
+      return;
     }
-  };
+
+    await fetch("/api/cart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: session.user.email,
+        productId: product.product_id,
+        variantIndex,
+        quantity: 1,
+      }),
+    });
+
+    alert("✅ Added to cart");
+  }
+
+  /* ================= UI ================= */
 
   if (loading) {
     return (
@@ -91,22 +101,23 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {/* HEADER */}
       <header className="bg-white shadow">
-        <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Alcheringa Store</h1>
+        <div className="container mx-auto px-4 py-6 flex justify-between">
+          <h1 className="text-3xl font-bold">Alcheringa Store</h1>
+
           <div className="flex gap-4">
             {session ? (
               <>
                 <button
                   onClick={() => router.push("/cart")}
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  className="bg-blue-500 text-white px-4 py-2 rounded"
                 >
                   🛒 Cart
                 </button>
                 <button
                   onClick={() => router.push("/dashboard")}
-                  className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                  className="bg-gray-600 text-white px-4 py-2 rounded"
                 >
                   Dashboard
                 </button>
@@ -114,7 +125,7 @@ export default function Home() {
             ) : (
               <button
                 onClick={() => router.push("/login")}
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                className="bg-green-500 text-white px-4 py-2 rounded"
               >
                 Login
               </button>
@@ -123,81 +134,78 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Products Grid */}
+      {/* ADMIN ADD PRODUCT */}
+        <section className="container mx-auto px-4 py-8">
+          <AddProduct />
+        </section>
+
+      {/* PRODUCT LIST */}
       <main className="container mx-auto px-4 py-8">
         <h2 className="text-2xl font-semibold mb-6">Available Products</h2>
-        
+
         {products.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-xl text-gray-600">No products available</p>
-            <p className="text-sm text-gray-500 mt-2">
-              Add products from the admin panel
-            </p>
-          </div>
+          <p className="text-center text-gray-600">No products available</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <div
-                key={product._id}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-              >
-                <img
-                  src={product.img}
-                  alt={product.name}
-                  className="w-full h-48 object-cover cursor-pointer"
-                  onClick={() => router.push(`/product/${product._id}`)}
-                />
-                <div className="p-4">
-                  <h3 
-                    className="text-lg font-semibold mb-2 cursor-pointer hover:text-blue-600"
-                    onClick={() => router.push(`/product/${product._id}`)}
-                  >
-                    {product.name}
-                  </h3>
-                  <p className="text-2xl font-bold text-green-600 mb-2">
-                    ₹{product.price}
-                  </p>
-                  
-                  {/* Stock Info */}
-                  {product.size_boolean ? (
-                    <p className="text-sm text-gray-600 mb-3">
-                      Available in {product.stock.length} sizes
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {products.map((product) => {
+              const totalStock = product.variants.reduce(
+                (sum, v) => sum + v.stock,
+                0
+              );
+
+              const hasVariants = product.variants.length > 1;
+
+              return (
+                <div
+                  key={product.product_id}
+                  className="bg-white rounded-lg shadow hover:shadow-lg transition"
+                >
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="w-full h-48 object-cover cursor-pointer"
+                    onClick={() =>
+                      router.push(`/product/${product.product_id}`)
+                    }
+                  />
+
+                  <div className="p-4">
+                    <h3
+                      className="text-lg font-semibold cursor-pointer"
+                      onClick={() =>
+                        router.push(`/product/${product.product_id}`)
+                      }
+                    >
+                      {product.name}
+                    </h3>
+
+                    <p className="text-xl font-bold text-green-600">
+                      ₹{product.price}
                     </p>
-                  ) : (
-                    <p className="text-sm text-gray-600 mb-3">
-                      {product.stock_quantity > 0 ? (
+
+                    <p className="text-sm mb-3">
+                      {totalStock > 0 ? (
                         <span className="text-green-600">In Stock</span>
                       ) : (
                         <span className="text-red-600">Out of Stock</span>
                       )}
                     </p>
-                  )}
 
-                  {/* Add to Cart / View Options Button */}
-                  <button
-                    onClick={() => {
-                      if (product.size_boolean) {
-                        // For size variants, go to product page
-                        router.push(`/product/${product._id}`);
-                      } else {
-                        // For regular products, add directly to cart
-                        addToCart(product._id, 1);
+                    <button
+                      disabled={totalStock === 0}
+                      onClick={() =>
+                        hasVariants
+                          ? router.push(`/product/${product.product_id}`)
+                          : addToCart(product)
                       }
-                    }}
-                    disabled={
-                      !product.size_boolean && product.stock_quantity === 0
-                    }
-                    className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {product.size_boolean
-                      ? "View Options"
-                      : product.stock_quantity > 0
-                      ? "Add to Cart"
-                      : "Out of Stock"}
-                  </button>
+                      className="w-full bg-blue-500 text-white py-2 rounded disabled:bg-gray-300"
+                    >
+                      {hasVariants ? "View Options" : "Add to Cart"}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>

@@ -2,75 +2,123 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+
+/* ================= TYPES ================= */
+
+type Variant = {
+  size?: string;
+  color?: string;
+  stock: number;
+};
 
 interface Product {
   _id: string;
   product_id: string;
   name: string;
-  img: string;
+  imageUrl: string;
   price: number;
-  size_boolean: boolean;
-  stock: { size: string; quantity: number }[];
-  stock_quantity: number;
   description?: string;
+  hasSize: boolean;
+  hasColor: boolean;
+  variants: Variant[];
 }
+
+/* ================= PAGE ================= */
 
 export default function ProductDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { data: session } = useSession();
-  
+
   const productId = params.id as string;
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
-  const [buying, setBuying] = useState(false); // State for Buy Now loading
+  const [buying, setBuying] = useState(false);
+
+  /* ================= FETCH PRODUCT ================= */
 
   useEffect(() => {
     fetchProduct();
   }, [productId]);
 
-  const fetchProduct = async () => {
+  async function fetchProduct() {
     try {
-      const response = await fetch("/api/admin/product");
-      const result = await response.json();
+      const res = await fetch(`/api/admin/product/${productId}`);
+      if (!res.ok) throw new Error("Product not found");
 
-      let products = [];
-      if (result.success && result.data) {
-        products = result.data;
-      } else if (result.value && Array.isArray(result.value)) {
-        products = result.value;
-      } else if (Array.isArray(result)) {
-        products = result;
-      }
+      const data: Product = await res.json();
+      setProduct(data);
 
-      const foundProduct = products.find((p: Product) => p._id === productId);
-      
-      if (foundProduct) {
-        setProduct(foundProduct);
-        if (foundProduct.size_boolean && foundProduct.stock.length > 0) {
-          setSelectedSize(foundProduct.stock[0].size);
+      if (data.hasSize) {
+        const firstAvailable = data.variants.find((v) => v.size && v.stock > 0);
+        if (firstAvailable?.size) {
+          setSelectedSize(firstAvailable.size);
         }
       }
-    } catch (error) {
-      console.error("Error fetching product:", error);
+    } catch (err) {
+      console.error("Fetch product error:", err);
+      setProduct(null);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const addToCart = async () => {
-    if (!session || !session.user?.email) {
+  /* ================= LOADING / NOT FOUND ================= */
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-xl">Loading product...</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+        <button
+          onClick={() => router.push("/")}
+          className="bg-blue-500 text-white px-6 py-2 rounded"
+        >
+          Back to Products
+        </button>
+      </div>
+    );
+  }
+
+  /* =======================================================
+     ✅ CRITICAL FIX — NON-NULL ALIAS (removes TS errors)
+     ======================================================= */
+  const p = product;
+
+  /* ================= STOCK LOGIC ================= */
+
+  const totalStock = p.variants.reduce((sum, v) => sum + v.stock, 0);
+
+  const selectedSizeStock = p.hasSize
+    ? p.variants.find((v) => v.size === selectedSize)?.stock ?? 0
+    : totalStock;
+
+  const isOutOfStock =
+    totalStock === 0 || (p.hasSize && p.variants.every((v) => v.stock === 0));
+
+  /* ================= ADD TO CART ================= */
+
+  async function addToCart() {
+    if (!session?.user?.email) {
       alert("Please login to add items to cart");
       router.push("/login");
       return;
     }
 
-    if (product?.size_boolean && !selectedSize) {
+    if (p.hasSize && !selectedSize) {
       alert("Please select a size");
       return;
     }
@@ -78,43 +126,43 @@ export default function ProductDetailPage() {
     setAdding(true);
 
     try {
-      const response = await fetch("/api/cart", {
+      const res = await fetch("/api/cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: session.user.email,
-          product: productId,
+          product: p.product_id,
           quantity,
           size: selectedSize || undefined,
         }),
       });
 
-      const result = await response.json();
+      const data = await res.json();
 
-      if (response.ok) {
-        alert("✅ Item added to cart!");
-        // router.push("/cart");
+      if (!res.ok) {
+        alert(data.error || "Failed to add to cart");
       } else {
-        alert(result.error || "Failed to add to cart");
+        alert("✅ Item added to cart!");
       }
-    } catch (error) {
-      console.error("Error adding to cart:", error);
+    } catch (err) {
+      console.error("Add to cart error:", err);
       alert("Failed to add to cart");
     } finally {
       setAdding(false);
     }
-  };
+  }
 
-  // --- NEW BUY NOW FUNCTION ---
-  const handleBuyNow = async () => {
-    if (!session || !session.user?.email) {
+  /* ================= BUY NOW ================= */
+
+  async function handleBuyNow() {
+    if (!session?.user?.email) {
       alert("Please login to buy items");
       router.push("/login");
       return;
     }
 
-    if (product?.size_boolean && !selectedSize) {
-      alert("Please select a size first!");
+    if (p.hasSize && !selectedSize) {
+      alert("Please select a size first");
       return;
     }
 
@@ -125,124 +173,119 @@ export default function ProductDetailPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          productId: product?.product_id, // Important: Your backend expects product_id string (e.g., "Test2")
-          quantity: quantity,
+          productId: p.product_id,
+          quantity,
           size: selectedSize || null,
         }),
       });
 
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
 
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to initialize purchase");
-      }
-
-      // Redirect to checkout with special flag
       router.push("/checkout?type=direct");
-      
-    } catch (error: any) {
-      alert("❌ Error: " + error.message);
+    } catch (err: any) {
+      alert("❌ Error: " + err.message);
     } finally {
       setBuying(false);
     }
-  };
+  }
 
-  if (loading) return <div className="flex justify-center items-center min-h-screen"><p className="text-xl">Loading product...</p></div>;
-
-  if (!product) return <div className="container mx-auto px-4 py-8 text-center"><h1 className="text-2xl font-bold mb-4">Product Not Found</h1><button onClick={() => router.push("/")} className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Back to Products</button></div>;
-
-  const isOutOfStock = !product.size_boolean && product.stock_quantity === 0;
-  const selectedSizeStock = product.size_boolean 
-    ? product.stock.find(s => s.size === selectedSize)?.quantity || 0
-    : product.stock_quantity;
+  /* ================= UI ================= */
 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <button onClick={() => router.push("/")} className="text-blue-500 hover:text-blue-700">← Back to Products</button>
-          {session && <button onClick={() => router.push("/cart")} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">🛒 Cart</button>}
+        <div className="container mx-auto px-4 py-4 flex justify-between">
+          <button onClick={() => router.push("/")} className="text-blue-500">
+            ← Back
+          </button>
+          {session && (
+            <button
+              onClick={() => router.push("/cart")}
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+            >
+              🛒 Cart
+            </button>
+          )}
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-6">
-              <img src={product.img} alt={product.name} className="w-full h-96 object-cover rounded-lg" />
+        <div className="bg-white rounded-lg shadow-lg max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
+          <img
+            src={p.imageUrl}
+            alt={p.name}
+            className="w-full h-96 object-cover rounded-l-lg"
+          />
+
+          <div className="p-6">
+            <h1 className="text-3xl font-bold mb-2">{p.name}</h1>
+            <p className="text-3xl font-bold text-green-600 mb-4">₹{p.price}</p>
+            {p.description && (
+              <p className="text-gray-600 mb-4">{p.description}</p>
+            )}
+
+            {p.hasSize && (
+              <div className="mb-4">
+                <p className="font-semibold mb-2">Select Size:</p>
+                <div className="flex gap-2 flex-wrap">
+                  {p.variants.map(
+                    (v) =>
+                      v.size && (
+                        <button
+                          key={v.size}
+                          disabled={v.stock === 0}
+                          onClick={() => setSelectedSize(v.size!)}
+                          className={`px-4 py-2 border rounded ${
+                            selectedSize === v.size
+                              ? "bg-blue-500 text-white"
+                              : "bg-white"
+                          } ${
+                            v.stock === 0 && "opacity-40 cursor-not-allowed"
+                          }`}
+                        >
+                          {v.size}
+                        </button>
+                      )
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="mb-4 flex items-center gap-3">
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="px-3 py-1 bg-gray-200 rounded"
+              >
+                −
+              </button>
+              <span className="text-lg">{quantity}</span>
+              <button
+                onClick={() =>
+                  setQuantity(Math.min(selectedSizeStock, quantity + 1))
+                }
+                className="px-3 py-1 bg-gray-200 rounded"
+              >
+                +
+              </button>
             </div>
 
-            <div className="p-6">
-              <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
-              <p className="text-3xl font-bold text-green-600 mb-6">₹{product.price}</p>
-              {product.description && <p className="text-gray-600 mb-6">{product.description}</p>}
+            <div className="flex gap-4">
+              <button
+                onClick={addToCart}
+                disabled={adding || isOutOfStock}
+                className="flex-1 bg-green-600 text-white py-3 rounded"
+              >
+                {adding ? "Adding..." : "Add to Cart"}
+              </button>
 
-              <div className="mb-6">
-                {product.size_boolean ? (
-                  <p className="text-sm text-gray-600">Available in {product.stock.length} sizes</p>
-                ) : (
-                  <p className={`text-sm font-semibold ${isOutOfStock ? 'text-red-600' : 'text-green-600'}`}>
-                    {isOutOfStock ? 'Out of Stock' : `${product.stock_quantity} in stock`}
-                  </p>
-                )}
-              </div>
-
-              {(isOutOfStock || (product.size_boolean && product.stock.every(s => s.quantity === 0))) ? (
-                <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 mb-6">
-                  <p className="text-yellow-800 font-semibold">🔔 Available Soon</p>
-                  <p className="text-sm text-yellow-700 mt-1">This product is currently out of stock.</p>
-                </div>
-              ) : (
-                <>
-                  {product.size_boolean && (
-                    <div className="mb-6">
-                      <label className="block text-sm font-semibold mb-2">Select Size:</label>
-                      <div className="flex gap-2 flex-wrap">
-                        {product.stock.map((stockItem) => (
-                          <button
-                            key={stockItem.size}
-                            onClick={() => setSelectedSize(stockItem.size)}
-                            disabled={stockItem.quantity === 0}
-                            className={`px-4 py-2 border rounded ${selectedSize === stockItem.size ? 'bg-blue-500 text-white border-blue-500' : stockItem.quantity === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:border-blue-500'}`}
-                          >
-                            {stockItem.size}
-                            {stockItem.quantity === 0 && <span className="block text-xs">Out of Stock</span>}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="mb-6">
-                    <label className="block text-sm font-semibold mb-2">Quantity:</label>
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300" disabled={quantity <= 1}>−</button>
-                      <span className="text-xl font-semibold w-12 text-center">{quantity}</span>
-                      <button onClick={() => setQuantity(Math.min(selectedSizeStock, quantity + 1))} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300" disabled={quantity >= selectedSizeStock}>+</button>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4">
-                    {/* ADD TO CART BUTTON */}
-                    <button
-                      onClick={addToCart}
-                      disabled={adding || isOutOfStock || selectedSizeStock === 0}
-                      className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                    >
-                      {adding ? "Adding..." : "Add to Cart"}
-                    </button>
-                    
-                    {/* BUY NOW BUTTON */}
-                    <button
-                      onClick={handleBuyNow}
-                      disabled={buying || isOutOfStock || selectedSizeStock === 0}
-                      className="flex-1 bg-orange-600 text-white py-3 rounded-lg font-semibold hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors shadow-md"
-                    >
-                      {buying ? "Processing..." : "⚡ Buy Now"}
-                    </button>
-                  </div>
-                </>
-              )}
+              <button
+                onClick={handleBuyNow}
+                disabled={buying || isOutOfStock}
+                className="flex-1 bg-orange-600 text-white py-3 rounded"
+              >
+                {buying ? "Processing..." : "⚡ Buy Now"}
+              </button>
             </div>
           </div>
         </div>
