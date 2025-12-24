@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 interface Product {
@@ -28,6 +28,7 @@ export default function ProductDetailPage() {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
+  const [buying, setBuying] = useState(false); // State for Buy Now loading
 
   useEffect(() => {
     fetchProduct();
@@ -51,7 +52,6 @@ export default function ProductDetailPage() {
       
       if (foundProduct) {
         setProduct(foundProduct);
-        // Set default size if product has sizes
         if (foundProduct.size_boolean && foundProduct.stock.length > 0) {
           setSelectedSize(foundProduct.stock[0].size);
         }
@@ -105,27 +105,51 @@ export default function ProductDetailPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-xl">Loading product...</p>
-      </div>
-    );
-  }
+  // --- NEW BUY NOW FUNCTION ---
+  const handleBuyNow = async () => {
+    if (!session || !session.user?.email) {
+      alert("Please login to buy items");
+      router.push("/login");
+      return;
+    }
 
-  if (!product) {
-    return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
-        <button
-          onClick={() => router.push("/")}
-          className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
-        >
-          Back to Products
-        </button>
-      </div>
-    );
-  }
+    if (product?.size_boolean && !selectedSize) {
+      alert("Please select a size first!");
+      return;
+    }
+
+    setBuying(true);
+
+    try {
+      const res = await fetch("/api/temp-order-cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product?.product_id, // Important: Your backend expects product_id string (e.g., "Test2")
+          quantity: quantity,
+          size: selectedSize || null,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to initialize purchase");
+      }
+
+      // Redirect to checkout with special flag
+      router.push("/checkout?type=direct");
+      
+    } catch (error: any) {
+      alert("❌ Error: " + error.message);
+    } finally {
+      setBuying(false);
+    }
+  };
+
+  if (loading) return <div className="flex justify-center items-center min-h-screen"><p className="text-xl">Loading product...</p></div>;
+
+  if (!product) return <div className="container mx-auto px-4 py-8 text-center"><h1 className="text-2xl font-bold mb-4">Product Not Found</h1><button onClick={() => router.push("/")} className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Back to Products</button></div>;
 
   const isOutOfStock = !product.size_boolean && product.stock_quantity === 0;
   const selectedSizeStock = product.size_boolean 
@@ -134,56 +158,28 @@ export default function ProductDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white shadow">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <button
-            onClick={() => router.push("/")}
-            className="text-blue-500 hover:text-blue-700"
-          >
-            ← Back to Products
-          </button>
-          {session && (
-            <button
-              onClick={() => router.push("/cart")}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              🛒 Cart
-            </button>
-          )}
+          <button onClick={() => router.push("/")} className="text-blue-500 hover:text-blue-700">← Back to Products</button>
+          {session && <button onClick={() => router.push("/cart")} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">🛒 Cart</button>}
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-4xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Product Image */}
             <div className="p-6">
-              <img
-                src={product.img}
-                alt={product.name}
-                className="w-full h-96 object-cover rounded-lg"
-              />
+              <img src={product.img} alt={product.name} className="w-full h-96 object-cover rounded-lg" />
             </div>
 
-            {/* Product Details */}
             <div className="p-6">
               <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
-              
-              <p className="text-3xl font-bold text-green-600 mb-6">
-                ₹{product.price}
-              </p>
+              <p className="text-3xl font-bold text-green-600 mb-6">₹{product.price}</p>
+              {product.description && <p className="text-gray-600 mb-6">{product.description}</p>}
 
-              {product.description && (
-                <p className="text-gray-600 mb-6">{product.description}</p>
-              )}
-
-              {/* Stock Status */}
               <div className="mb-6">
                 {product.size_boolean ? (
-                  <p className="text-sm text-gray-600">
-                    Available in {product.stock.length} sizes
-                  </p>
+                  <p className="text-sm text-gray-600">Available in {product.stock.length} sizes</p>
                 ) : (
                   <p className={`text-sm font-semibold ${isOutOfStock ? 'text-red-600' : 'text-green-600'}`}>
                     {isOutOfStock ? 'Out of Stock' : `${product.stock_quantity} in stock`}
@@ -191,86 +187,60 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
-              {/* Out of Stock Message */}
               {(isOutOfStock || (product.size_boolean && product.stock.every(s => s.quantity === 0))) ? (
                 <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 mb-6">
-                  <p className="text-yellow-800 font-semibold">
-                    🔔 Available Soon
-                  </p>
-                  <p className="text-sm text-yellow-700 mt-1">
-                    This product is currently out of stock. Check back later!
-                  </p>
+                  <p className="text-yellow-800 font-semibold">🔔 Available Soon</p>
+                  <p className="text-sm text-yellow-700 mt-1">This product is currently out of stock.</p>
                 </div>
               ) : (
                 <>
-                  {/* Size Selection */}
                   {product.size_boolean && (
                     <div className="mb-6">
-                      <label className="block text-sm font-semibold mb-2">
-                        Select Size:
-                      </label>
+                      <label className="block text-sm font-semibold mb-2">Select Size:</label>
                       <div className="flex gap-2 flex-wrap">
                         {product.stock.map((stockItem) => (
                           <button
                             key={stockItem.size}
                             onClick={() => setSelectedSize(stockItem.size)}
                             disabled={stockItem.quantity === 0}
-                            className={`px-4 py-2 border rounded ${
-                              selectedSize === stockItem.size
-                                ? 'bg-blue-500 text-white border-blue-500'
-                                : stockItem.quantity === 0
-                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                : 'bg-white hover:border-blue-500'
-                            }`}
+                            className={`px-4 py-2 border rounded ${selectedSize === stockItem.size ? 'bg-blue-500 text-white border-blue-500' : stockItem.quantity === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:border-blue-500'}`}
                           >
                             {stockItem.size}
-                            {stockItem.quantity === 0 && (
-                              <span className="block text-xs">Out of Stock</span>
-                            )}
+                            {stockItem.quantity === 0 && <span className="block text-xs">Out of Stock</span>}
                           </button>
                         ))}
                       </div>
                     </div>
                   )}
 
-                  {/* Quantity Selection */}
                   <div className="mb-6">
-                    <label className="block text-sm font-semibold mb-2">
-                      Quantity:
-                    </label>
+                    <label className="block text-sm font-semibold mb-2">Quantity:</label>
                     <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
-                        disabled={quantity <= 1}
-                      >
-                        −
-                      </button>
-                      <span className="text-xl font-semibold w-12 text-center">
-                        {quantity}
-                      </span>
-                      <button
-                        onClick={() => setQuantity(Math.min(selectedSizeStock, quantity + 1))}
-                        className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
-                        disabled={quantity >= selectedSizeStock}
-                      >
-                        +
-                      </button>
+                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300" disabled={quantity <= 1}>−</button>
+                      <span className="text-xl font-semibold w-12 text-center">{quantity}</span>
+                      <button onClick={() => setQuantity(Math.min(selectedSizeStock, quantity + 1))} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300" disabled={quantity >= selectedSizeStock}>+</button>
                     </div>
                   </div>
 
-                  {/* Add to Cart Button */}
-                  <button
-                    onClick={addToCart}
-                    disabled={adding || isOutOfStock || selectedSizeStock === 0}
-                    className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {adding
-                      ? "Adding..."
-                      : isOutOfStock || selectedSizeStock === 0
-                      ? "Out of Stock"
-                      : "Add to Cart"}
-                  </button>
+                  <div className="flex gap-4">
+                    {/* ADD TO CART BUTTON */}
+                    <button
+                      onClick={addToCart}
+                      disabled={adding || isOutOfStock || selectedSizeStock === 0}
+                      className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {adding ? "Adding..." : "Add to Cart"}
+                    </button>
+                    
+                    {/* BUY NOW BUTTON */}
+                    <button
+                      onClick={handleBuyNow}
+                      disabled={buying || isOutOfStock || selectedSizeStock === 0}
+                      className="flex-1 bg-orange-600 text-white py-3 rounded-lg font-semibold hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors shadow-md"
+                    >
+                      {buying ? "Processing..." : "⚡ Buy Now"}
+                    </button>
+                  </div>
                 </>
               )}
             </div>
