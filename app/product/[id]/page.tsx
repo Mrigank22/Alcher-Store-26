@@ -93,7 +93,7 @@ export default function ProductDetailPage() {
 
       if (response.ok) {
         alert("✅ Item added to cart!");
-        router.push("/cart");
+        // router.push("/cart");
       } else {
         alert(result.error || "Failed to add to cart");
       }
