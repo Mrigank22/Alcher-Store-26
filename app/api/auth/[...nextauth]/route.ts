@@ -67,6 +67,26 @@ const handler = NextAuth({
       }
       return true;
     },
+    
+    async jwt({ token, user }) {
+      if (user) {
+        // On sign in, fetch the user from database and add ID to token
+        await connectDB();
+        const dbUser = await User.findOne({ email: user.email });
+        if (dbUser) {
+          token.id = dbUser._id.toString();
+        }
+      }
+      return token;
+    },
+    
+    async session({ session, token }) {
+      // Add user ID to session from token
+      if (session.user) {
+        session.user.id = token.id as string;
+      }
+      return session;
+    },
   },
 });
 
