@@ -3,8 +3,6 @@ import { connectDB } from "@/lib/mongodb";
 import Cart from "@/models/Cart";
 import Product from "@/models/Product";
 
-/* ---------- helpers ---------- */
-
 function recalcCart(cart: any) {
   cart.total_quantity = cart.items.reduce(
     (sum: number, i: any) => sum + i.quantity,
@@ -17,10 +15,6 @@ function recalcCart(cart: any) {
   );
 }
 
-/* ---------- GET CART ---------- */
-/**
- * /api/cart?email=user@email.com
- */
 export async function GET(req: Request) {
   await connectDB();
 
@@ -40,7 +34,7 @@ export async function GET(req: Request) {
   return NextResponse.json(cart || { items: [] });
 }
 
-/* ---------- ADD TO CART ---------- */
+/* ADD TO CART  */
 export async function POST(req: Request) {
   await connectDB();
 
@@ -90,7 +84,7 @@ export async function POST(req: Request) {
   return NextResponse.json(cart);
 }
 
-/* ---------- UPDATE QUANTITY ---------- */
+/*UPDATE QUANTITY */
 export async function PATCH(req: Request) {
   await connectDB();
 
@@ -129,7 +123,7 @@ export async function PATCH(req: Request) {
   return NextResponse.json(cart);
 }
 
-/* ---------- REMOVE ITEM ---------- */
+/*REMOVE ITEM */
 export async function DELETE(req: Request) {
   await connectDB();
 

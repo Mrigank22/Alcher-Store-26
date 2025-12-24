@@ -1,7 +1,7 @@
 import mongoose, {Schema ,model,models} from "mongoose";
 
 
-const CartItemSchema = new Schema(
+const CartItem = new Schema(
     {
         product:{type:Schema.Types.ObjectId,ref:"Product",required:true},
         size:{type:String},
@@ -11,10 +11,10 @@ const CartItemSchema = new Schema(
     },
 )
 
-const CartSchema = new Schema(
+const Cart = new Schema(
     {
-        user_email: {type: String,required: true,unique: true,index: true},
-        items:{type:[CartItemSchema],default:[]},
+        user_email: {type: String,required: true,unique: true,index: true,lowercase:true},
+        items:{type:[CartItem],default:[]},
         total_quantity:{type:Number,default:0},
         total_price:{type:Number,default:0},
     },
@@ -22,4 +22,4 @@ const CartSchema = new Schema(
 );
 
 
-export default models.Cart || mongoose.model("Cart",CartSchema);
+export default models.Cart || mongoose.model("Cart",Cart);

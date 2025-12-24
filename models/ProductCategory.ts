@@ -1,6 +1,6 @@
 import mongoose, { Schema, models } from "mongoose";
 
-const ProductCategorySchema = new Schema(
+const ProductCategory = new Schema(
     {
         name:{type:String,required:true,unique:true},
 
@@ -16,4 +16,4 @@ const ProductCategorySchema = new Schema(
     {timestamps : true}
 );
 
-export default models.ProductCategory || mongoose.model("ProductCategory",ProductCategorySchema)
+export default models.ProductCategory || mongoose.model("ProductCategory",ProductCategory)

@@ -1,6 +1,6 @@
 import mongoose, { Schema, models } from "mongoose";
 
-const ReviewSchema = new Schema(
+const Review = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: "User" },
     review_content: { type: String },
@@ -9,13 +9,13 @@ const ReviewSchema = new Schema(
   { timestamps: true }
 );
 
-const StockSchema = new Schema({
+const Stock = new Schema({
   size: { type: String, required: true }, 
   quantity: { type: Number, required: true },
 });
 
 
-const ProductSchema = new Schema({
+const Product = new Schema({
   product_id: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   img: { type: String, required: true },
@@ -25,7 +25,7 @@ const ProductSchema = new Schema({
 
 
   stock: {
-    type: [StockSchema],
+    type: [Stock],
     default: [],
   },
 
@@ -36,4 +36,4 @@ const ProductSchema = new Schema({
   },
 });
 
-export default models.Product || mongoose.model("Product", ProductSchema);
+export default models.Product || mongoose.model("Product", Product);
