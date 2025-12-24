@@ -11,7 +11,11 @@ export default function AddToCartButton({
 }) {
   const [loading, setLoading] = useState(false);
 
-  async function addToCart() {
+  async function addToCart() { 
+    if (!email) {
+      alert("Please login to add items to cart");
+      return;
+    }
     setLoading(true);
 
     const res = await fetch("/api/cart", {
