@@ -37,23 +37,30 @@ export async function GET(req: Request) {
 /* ADD TO CART  */
 export async function POST(req: Request) {
   await connectDB();
-
-  const { email, product, quantity = 1 } = await req.json();
+  const { email, product,size,colour, quantity = 1 } = await req.json();
 
   if (!email || !product) {
     return NextResponse.json(
-      { error: "Missing data" },
+      { error: "Email, product and size required" },
       { status: 400 }
     );
   }
 
   const productDoc = await Product.findById(product);
-  if (!productDoc) {
-    return NextResponse.json(
-      { error: "Product not found" },
-      { status: 404 }
-    );
-  }
+if (!productDoc) {
+  return NextResponse.json(
+    { error: "Product not found" },
+    { status: 404 }
+  );
+}
+
+if (productDoc.size_boolean && !size) {
+  return NextResponse.json(
+    { error: "Please select a size" },
+    { status: 400 }
+  );
+}
+
 
   let cart = await Cart.findOne({ user_email: email });
 
@@ -64,8 +71,11 @@ export async function POST(req: Request) {
     });
   }
 
-  const existingItem = cart.items.find(
-    (i: any) => i.product.toString() === product
+   const existingItem = cart.items.find(
+    (i: any) =>
+      i.product.toString() === product &&
+      i.size === size &&
+      i.colour === colour
   );
 
   if (existingItem) {
@@ -73,6 +83,8 @@ export async function POST(req: Request) {
   } else {
     cart.items.push({
       product,
+      size,
+      colour,
       quantity,
       price: productDoc.price,
     });
@@ -88,7 +100,16 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   await connectDB();
 
-  const { email, product, quantity } = await req.json();
+
+  const { email, product, size, colour, quantity } =
+    await req.json();
+
+  if (!email || !product || !size || quantity < 1) {
+    return NextResponse.json(
+      { error: "Invalid data" },
+      { status: 400 }
+    );
+  }
 
   if (quantity < 1) {
     return NextResponse.json(
@@ -106,7 +127,10 @@ export async function PATCH(req: Request) {
   }
 
   const item = cart.items.find(
-    (i: any) => i.product.toString() === product
+    (i: any) =>
+      i.product.toString() === product &&
+      i.size === size &&
+      i.colour === colour
   );
 
   if (!item) {
@@ -123,11 +147,18 @@ export async function PATCH(req: Request) {
   return NextResponse.json(cart);
 }
 
-/*REMOVE ITEM */
+
 export async function DELETE(req: Request) {
   await connectDB();
 
-  const { email, product } = await req.json();
+  const { email, product, size, colour } = await req.json();
+
+  if (!email || !product) {
+    return NextResponse.json(
+      { error: "Missing data" },
+      { status: 400 }
+    );
+  }
 
   const cart = await Cart.findOne({ user_email: email });
   if (!cart) {
@@ -137,9 +168,16 @@ export async function DELETE(req: Request) {
     );
   }
 
-  cart.items = cart.items.filter(
-    (i: any) => i.product.toString() !== product
-  );
+  cart.items = cart.items.filter((i: any) => {
+    if (i.size) {
+      return !(
+        i.product.toString() === product &&
+        i.size === size &&
+        i.colour === colour
+      );
+    }
+    return i.product.toString() !== product;
+  });
 
   recalcCart(cart);
   await cart.save();
