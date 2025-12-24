@@ -102,8 +102,8 @@ export async function POST(req: NextRequest) {
 
       // Clear user's cart
       await Cart.findOneAndUpdate(
-        { user: user._id },
-        { items: [], totalAmount: 0 }
+        { user_email: session.user.email },
+        { items: [], total_quantity: 0, total_price: 0 }
       );
 
       // Reduce stock (optional)
@@ -170,8 +170,8 @@ export async function POST(req: NextRequest) {
 
     // Clear user's cart
     await Cart.findOneAndUpdate(
-      { user: user._id },
-      { items: [], totalAmount: 0 }
+      { user_email: session.user.email },
+      { items: [], total_quantity: 0, total_price: 0 }
     );
 
     // Reduce stock quantities

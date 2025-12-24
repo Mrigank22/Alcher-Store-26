@@ -64,19 +64,23 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (status === "authenticated") {
+    if (status === "authenticated" && session?.user?.email) {
       fetchCart();
     }
-  }, [status]);
+  }, [status, session]);
 
   const fetchCart = async () => {
     try {
-      const response = await fetch("/api/cart");
+      if (!session?.user?.email) return;
+
+      const response = await fetch(`/api/cart?email=${session.user.email}`);
       const result = await response.json();
 
-      if (result.success) {
-        setCartItems(result.data.items || []);
-        calculateTotals(result.data.items || []);
+      if (result && result.items && result.items.length > 0) {
+        setCartItems(result.items);
+        calculateTotals(result.items);
+      } else {
+        setCartItems([]);
       }
     } catch (error) {
       console.error("Error fetching cart:", error);
@@ -126,8 +130,9 @@ export default function CheckoutPage() {
   const handleCheckout = async () => {
     if (!validateAddress()) return;
 
-    if (cartItems.length === 0) {
-      alert("Your cart is empty");
+    if (!cartItems || cartItems.length === 0) {
+      alert("Your cart is empty. Please add items before checkout.");
+      router.push("/");
       return;
     }
 

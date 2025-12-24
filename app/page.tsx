@@ -31,8 +31,6 @@ export default function Home() {
       const response = await fetch("/api/admin/product");
       const result = await response.json();
       
-      console.log("API Response:", result); // Debug log
-      
       // Handle both response formats
       if (result.success && result.data) {
         setProducts(result.data);
@@ -53,7 +51,7 @@ export default function Home() {
   };
 
   const addToCart = async (productId: string, quantity: number = 1) => {
-    if (!session) {
+    if (!session || !session.user?.email) {
       alert("Please login to add items to cart");
       router.push("/login");
       return;
@@ -63,15 +61,19 @@ export default function Home() {
       const response = await fetch("/api/cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, quantity }),
+        body: JSON.stringify({ 
+          email: session.user.email,
+          product: productId, 
+          quantity 
+        }),
       });
 
       const result = await response.json();
 
-      if (result.success) {
+      if (response.ok) {
         alert("✅ Item added to cart!");
       } else {
-        alert(result.message || "Failed to add to cart");
+        alert(result.error || "Failed to add to cart");
       }
     } catch (error) {
       console.error("Error adding to cart:", error);
@@ -97,7 +99,7 @@ export default function Home() {
             {session ? (
               <>
                 <button
-                  onClick={() => router.push("/checkout")}
+                  onClick={() => router.push("/cart")}
                   className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                 >
                   🛒 Cart
@@ -142,10 +144,16 @@ export default function Home() {
                 <img
                   src={product.img}
                   alt={product.name}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-48 object-cover cursor-pointer"
+                  onClick={() => router.push(`/product/${product._id}`)}
                 />
                 <div className="p-4">
-                  <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
+                  <h3 
+                    className="text-lg font-semibold mb-2 cursor-pointer hover:text-blue-600"
+                    onClick={() => router.push(`/product/${product._id}`)}
+                  >
+                    {product.name}
+                  </h3>
                   <p className="text-2xl font-bold text-green-600 mb-2">
                     ₹{product.price}
                   </p>
@@ -165,9 +173,17 @@ export default function Home() {
                     </p>
                   )}
 
-                  {/* Add to Cart Button */}
+                  {/* Add to Cart / View Options Button */}
                   <button
-                    onClick={() => addToCart(product._id, 1)}
+                    onClick={() => {
+                      if (product.size_boolean) {
+                        // For size variants, go to product page
+                        router.push(`/product/${product._id}`);
+                      } else {
+                        // For regular products, add directly to cart
+                        addToCart(product._id, 1);
+                      }
+                    }}
                     disabled={
                       !product.size_boolean && product.stock_quantity === 0
                     }

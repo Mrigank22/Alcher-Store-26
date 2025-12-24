@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get user's cart
-    const cart = await Cart.findOne({ user: user._id }).populate(
+    // Get user's cart using user_email
+    const cart = await Cart.findOne({ user_email: session.user.email }).populate(
       "items.product"
     );
 
