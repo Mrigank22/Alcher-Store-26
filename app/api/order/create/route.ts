@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { connectDB } from "@/lib/mongodb";
 import Order from "@/models/Order";
 import Cart from "@/models/Cart";
+import TempCart from "@/models/TempCart";
 import Product from "@/models/Product";
 
 /**
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { shippingAddress, notes = "" } = body;
+    const { shippingAddress, notes = "", isDirect = false } = body;
 
     // Validate shipping address
     if (
@@ -46,20 +47,24 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
     
-    // Import User model to find user ID
+    // Import User model to find or create user
     const User = (await import("@/models/User")).default;
-    const user = await User.findOne({ email: session.user.email });
+    let user = await User.findOne({ email: session.user.email });
+    
+    // If user doesn't exist in DB, create them
     if (!user) {
-      return NextResponse.json(
-        { success: false, message: "User not found" },
-        { status: 404 }
-      );
+      user = await User.create({
+        email: session.user.email,
+        name: session.user.name || shippingAddress.name || "User",
+        phone: shippingAddress.phone || "",
+        image: session.user.image || "",
+      });
     }
 
-    // Get user's cart using user_email
-    const cart = await Cart.findOne({ user_email: session.user.email }).populate(
-      "items.product"
-    );
+    // Get user's cart - either TempCart (for direct buy) or regular Cart
+    const cart = isDirect
+      ? await TempCart.findOne({ user_email: session.user.email }).populate("items.product")
+      : await Cart.findOne({ user_email: session.user.email }).populate("items.product");
 
     if (!cart || cart.items.length === 0) {
       return NextResponse.json(
@@ -79,28 +84,21 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Check stock
-      if (product.size_boolean && item.size) {
-        const stockItem = product.stock.find((s: any) => s.size === item.size);
-        if (!stockItem || stockItem.quantity < item.quantity) {
-          return NextResponse.json(
-            {
-              success: false,
-              message: `Insufficient stock for ${product.name} (Size: ${item.size})`,
-            },
-            { status: 400 }
-          );
-        }
-      } else if (!product.size_boolean) {
-        if (product.stock_quantity < item.quantity) {
-          return NextResponse.json(
-            {
-              success: false,
-              message: `Insufficient stock for ${product.name}`,
-            },
-            { status: 400 }
-          );
-        }
+      // Check stock for selected variant
+      const variant = product.variants.find(
+        (v: any) => 
+          (!product.hasSize || v.size === item.size) &&
+          (!product.hasColor || v.color === item.colour)
+      );
+
+      if (!variant || variant.stock < item.quantity) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `Insufficient stock for ${product.name}${item.size ? ` (Size: ${item.size})` : ''}${item.colour ? ` (Color: ${item.colour})` : ''}`,
+          },
+          { status: 400 }
+        );
       }
     }
 
@@ -108,9 +106,10 @@ export async function POST(req: NextRequest) {
     const orderItems = cart.items.map((item: any) => ({
       product: item.product._id,
       productName: item.product.name,
-      productImage: item.product.img,
+      productImage: item.product.imageUrl || item.product.img,
       quantity: item.quantity,
       size: item.size,
+      colour: item.colour,
       price: item.price,
       subtotal: item.price * item.quantity,
     }));

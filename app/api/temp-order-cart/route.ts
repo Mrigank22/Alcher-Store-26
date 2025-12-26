@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    // 3. Robust Stock Check (YOUR LOGIC)
+    // 3. Robust Stock Check
     const product = await Product.findOne({ product_id: productId });
     
     // Fallback: If not found by product_id, try _id
@@ -47,23 +47,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    // Validate Size Requirement
-    if (productDoc.size_boolean && !size) {
+    // Validate Size/Color Requirement
+    if (productDoc.hasSize && !size) {
         return NextResponse.json({ error: "Size selection is required" }, { status: 400 });
     }
 
-    // Validate Stock Quantity
-    let availableStock = 0;
-    if (productDoc.size_boolean) {
-        const stockItem = productDoc.stock.find((s: any) => s.size === size);
-        availableStock = stockItem ? stockItem.quantity : 0;
-    } else {
-        availableStock = productDoc.stock_quantity;
+    // Validate Stock Quantity for selected variant
+    const selectedVariant = productDoc.variants.find(
+      (v: any) => 
+        (!productDoc.hasSize || v.size === size) &&
+        (!productDoc.hasColor || v.color === (req.body?.colour || null))
+    );
+
+    if (!selectedVariant) {
+        return NextResponse.json(
+            { error: "Selected variant not found" }, 
+            { status: 400 }
+        );
     }
 
-    if (quantity > availableStock) {
+    if (quantity > selectedVariant.stock) {
         return NextResponse.json(
-            { error: `Out of Stock! Only ${availableStock} left.` }, 
+            { error: `Out of Stock! Only ${selectedVariant.stock} left.` }, 
             { status: 400 }
         );
     }

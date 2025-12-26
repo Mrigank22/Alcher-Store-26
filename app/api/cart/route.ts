@@ -37,30 +37,51 @@ export async function GET(req: Request) {
 /* ADD TO CART  */
 export async function POST(req: Request) {
   await connectDB();
-  const { email, product,size,colour, quantity = 1 } = await req.json();
+  const { email, product, size, colour, quantity = 1 } = await req.json();
 
   if (!email || !product) {
     return NextResponse.json(
-      { error: "Email, product and size required" },
+      { error: "Email and product required" },
       { status: 400 }
     );
   }
 
   const productDoc = await Product.findById(product);
-if (!productDoc) {
-  return NextResponse.json(
-    { error: "Product not found" },
-    { status: 404 }
-  );
-}
+  if (!productDoc) {
+    return NextResponse.json(
+      { error: "Product not found" },
+      { status: 404 }
+    );
+  }
 
-if (productDoc.size_boolean && !size) {
-  return NextResponse.json(
-    { error: "Please select a size" },
-    { status: 400 }
-  );
-}
+  // Validate variant selection for products with size/color
+  if (productDoc.hasSize && !size) {
+    return NextResponse.json(
+      { error: "Please select a size" },
+      { status: 400 }
+    );
+  }
 
+  if (productDoc.hasColor && !colour) {
+    return NextResponse.json(
+      { error: "Please select a color" },
+      { status: 400 }
+    );
+  }
+
+  // Validate stock for selected variant
+  const selectedVariant = productDoc.variants.find(
+    (v: any) => 
+      (!productDoc.hasSize || v.size === size) &&
+      (!productDoc.hasColor || v.color === colour)
+  );
+
+  if (!selectedVariant || selectedVariant.stock < quantity) {
+    return NextResponse.json(
+      { error: "Insufficient stock for selected variant" },
+      { status: 400 }
+    );
+  }
 
   let cart = await Cart.findOne({ user_email: email });
 
@@ -71,7 +92,7 @@ if (productDoc.size_boolean && !size) {
     });
   }
 
-   const existingItem = cart.items.find(
+  const existingItem = cart.items.find(
     (i: any) =>
       i.product.toString() === product &&
       i.size === size &&

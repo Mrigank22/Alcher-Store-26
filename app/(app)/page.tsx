@@ -75,13 +75,16 @@ export default function Home() {
       return;
     }
 
+    const variant = product.variants[variantIndex];
+
     await fetch("/api/cart", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email: session.user.email,
-        productId: product.product_id,
-        variantIndex,
+        product: product._id,
+        size: variant.size || null,
+        colour: variant.color || null,
         quantity: 1,
       }),
     });
