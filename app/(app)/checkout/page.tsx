@@ -9,11 +9,13 @@ interface CartItem {
   product: {
     _id: string;
     name: string;
-    img: string;
+    img?: string;
+    imageUrl?: string;
     price: number;
   };
   quantity: number;
   size: string | null;
+  colour?: string | null;
   price: number;
 }
 
@@ -149,10 +151,15 @@ export default function CheckoutPage() {
     setProcessing(true);
 
     try {
+      const isDirectBuy = searchParams.get("type") === "direct";
+      
       const orderResponse = await fetch("/api/order/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shippingAddress }),
+        body: JSON.stringify({ 
+          shippingAddress,
+          isDirect: isDirectBuy 
+        }),
       });
 
       const orderResult = await orderResponse.json();
@@ -338,7 +345,7 @@ export default function CheckoutPage() {
             <div className="border rounded p-4 space-y-4">
               {cartItems.map((item) => (
                 <div key={item._id} className="flex gap-4 border-b pb-4">
-                  <img src={item.product.img} alt={item.product.name} className="w-20 h-20 object-cover rounded" />
+                  <img src={item.product.imageUrl || item.product.img} alt={item.product.name} className="w-20 h-20 object-cover rounded" />
                   <div className="flex-1">
                     <h3 className="font-medium">{item.product.name}</h3>
                     {item.size && <p className="text-sm text-gray-600">Size: {item.size}</p>}

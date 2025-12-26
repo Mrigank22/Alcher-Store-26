@@ -52,7 +52,7 @@ export default function CartItem({
   return (
   <div className="flex items-center gap-4 border rounded p-4">
     <img
-      src={item.product.img}
+      src={item.product.imageUrl || item.product.img}
       alt={item.product.name}
       className="w-20 h-20 object-cover rounded"
     />
