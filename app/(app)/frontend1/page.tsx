@@ -14,7 +14,7 @@ export default function FirstPage() {
       <div className="flex-1 flex flex-col items-center pt-3 sm:pt-5 md:pt-7 lg:pt-9 px-4 relative max-w-[1920px] mx-auto w-full">
 
         {/* Top Text */}
-        <p className="font-geist font-semibold text-[#808080] text-[10px] sm:text-xs md:text-sm uppercase tracking-[0.08em] mb-3 sm:mb-4 relative z-40">
+        <p className="font-geist font-black text-[#0b0b0b] text-[10px] sm:text-xs md:text-sm uppercase tracking-[0.08em] mb-3 sm:mb-4 relative z-40">
           Buy Alcheringa 2026 Official Merchandise
         </p>
 
@@ -31,19 +31,19 @@ export default function FirstPage() {
         </div>
 
         {/* ===== CLOUD BAND ===== */}
-        <div className="relative w-full max-w-[900px] sm:max-w-[1100px] mx-auto z-10">
+        <div className="relative w-full max-w-[280px] min-[450px]:max-w-[380px] min-[550px]:max-w-[480px] sm:max-w-[600px] md:max-w-[900px] lg:max-w-[1100px] mx-auto z-10">
           <div
             className="
               absolute left-1/2 -translate-x-1/2
-              -top-[95px] sm:-top-[120px] md:-top-[150px] lg:-top-[180px]
+              -top-[45px] min-[450px]:-top-[58px] min-[550px]:-top-[75px] sm:-top-[95px] md:-top-[120px] lg:-top-[150px] xl:-top-[180px]
               w-[160%]
-              h-[240px] sm:h-[280px] md:h-[320px] lg:h-[360px]
+              h-[120px] min-[450px]:h-[155px] min-[550px]:h-[195px] sm:h-[240px] md:h-[280px] lg:h-[320px] xl:h-[360px]
               pointer-events-none
             "
           >
             {/* TOP CLOUDS */}
             <div className="absolute inset-0 z-10">
-              {/* Top Left – unchanged */}
+              {/* Top Left */}
               <div className="absolute inset-0 -translate-y-[28%] scale-[0.95]">
                 <Image
                   src="/cloud-top-left.png"
@@ -54,8 +54,8 @@ export default function FirstPage() {
                 />
               </div>
 
-              {/* Top Right – pushed a bit more UP */}
-              <div className="absolute inset-0 -translate-y-[36%] scale-[0.95]">
+              {/* Top Right */}
+              <div className="absolute inset-0 -translate-y-[40%] scale-[0.95]">
                 <Image
                   src="/cloud-top-right.png"
                   alt="Top Right Cloud"
@@ -68,7 +68,7 @@ export default function FirstPage() {
 
             {/* MAIN CLOUDS */}
             <div className="absolute inset-0 z-20">
-              {/* Left main cloud – made THINNER */}
+              {/* Left main cloud */}
               <div className="absolute left-0 top-0 h-full w-[92%]">
                 <Image
                   src="/cloud-left.png"
@@ -79,7 +79,7 @@ export default function FirstPage() {
                 />
               </div>
 
-              {/* Right main cloud – unchanged */}
+              {/* Right main cloud */}
               <Image
                 src="/cloud-right.png"
                 alt="Right Cloud"
