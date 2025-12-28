@@ -24,7 +24,8 @@ export async function POST(req: Request) {
       content: data.content,
       rating: data.rating,
       userId: data.userId || null, 
-      userName: data.userName,       
+      userName: data.userName,
+      userImage:data.userImage,    
     });
 
     return NextResponse.json(review, { status: 201 });

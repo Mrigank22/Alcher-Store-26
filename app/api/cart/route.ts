@@ -92,12 +92,13 @@ export async function POST(req: Request) {
     });
   }
 
-  const existingItem = cart.items.find(
-    (i: any) =>
-      i.product.toString() === product &&
-      i.size === size &&
-      i.colour === colour
-  );
+  const existingItem = cart.items.find((i: any) => {
+  if (i.product.toString() !== product) return false;
+  if (size && i.size !== size) return false;
+  if (colour && i.colour !== colour) return false;
+  return true;
+});
+
 
   if (existingItem) {
     existingItem.quantity += quantity;
@@ -125,7 +126,7 @@ export async function PATCH(req: Request) {
   const { email, product, size, colour, quantity } =
     await req.json();
 
-  if (!email || !product || !size || quantity < 1) {
+  if (!email || !product || quantity < 1) {
     return NextResponse.json(
       { error: "Invalid data" },
       { status: 400 }
@@ -147,17 +148,38 @@ export async function PATCH(req: Request) {
     );
   }
 
-  const item = cart.items.find(
-    (i: any) =>
-      i.product.toString() === product &&
-      i.size === size &&
-      i.colour === colour
-  );
+    const item = cart.items.find((i: any) => {
+    if (i.product.toString() !== product) return false;
+    if (size && i.size !== size) return false;
+    if (colour && i.colour !== colour) return false;
+    return true;
+  });
 
   if (!item) {
     return NextResponse.json(
       { error: "Item not found" },
       { status: 404 }
+    );
+  }
+  
+  const productDoc = await Product.findById(product);
+  if (!productDoc) {
+    return NextResponse.json(
+      { error: "Product not found" },
+      { status: 404 }
+    );
+  }
+
+  const selectedVariant = productDoc.variants.find(
+    (v: any) =>
+      (!productDoc.hasSize || v.size === size) &&
+      (!productDoc.hasColor || v.color === colour)
+  );
+
+  if (!selectedVariant || selectedVariant.stock < quantity) {
+    return NextResponse.json(
+      { error: "Insufficient stock" },
+      { status: 400 }
     );
   }
 
@@ -190,14 +212,10 @@ export async function DELETE(req: Request) {
   }
 
   cart.items = cart.items.filter((i: any) => {
-    if (i.size) {
-      return !(
-        i.product.toString() === product &&
-        i.size === size &&
-        i.colour === colour
-      );
-    }
-    return i.product.toString() !== product;
+    if (i.product.toString() !== product) return true;
+    if (size && i.size !== size) return true;
+    if (colour && i.colour !== colour) return true;
+    return false;
   });
 
   recalcCart(cart);
