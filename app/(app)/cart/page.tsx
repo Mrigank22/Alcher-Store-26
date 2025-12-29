@@ -33,35 +33,35 @@ export default async function CartPage() {
 
   <Navbar/>
 
-<div className="hidden md:flex absolute inset-0 pointer-events-none overflow-hidden z-0">
+<div className="hidden lg:flex absolute inset-0 pointer-events-none overflow-hidden z-0">
 
   <img
   src="/image516.png"
   alt=""
   className="absolute
-  md:top-[90px]
-  md:left-[-135px]"/>
+  lg:top-[98px]
+  lg:left-[-135px]"/>
 
   <img src="/image517.png" 
   alt="" 
   className="absolute
-  md:top-[100px]
-  md:left-[-100px]"/>
+  lg:top-[100px]
+  lg:left-[-100px]"/>
 
   <img src="/image514.png" 
 alt=""
 className="absolute
-md:top-[-90px]
-md:left-[995px]"/>
+lg:top-[-90px]
+lg:left-[995px]"/>
 
 <img src="/image515.png"
 alt=""
 className="absolute
-md:top-[15px]
-md:left-[560px]"/>
+lg:top-[15px]
+lg:left-[560px]"/>
 </div>
 
-<div className="md:hidden flex absolute inset-0 pointer-events-none overflow-hidden z-0">
+<div className="lg:hidden flex absolute inset-0 pointer-events-none overflow-hidden z-0">
   <img src="/group410.png" alt="" 
   className="absolute
   top-[90px]
@@ -71,10 +71,10 @@ md:left-[560px]"/>
   top-[75px]
   right-0"/>
 </div>
-      <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-10 z-10">
+      <div className="relative max-w-6xl mx-auto px-6 pt-16 pb-10 z-10">
         
-        <h1 className="text-4xl font-medium text-[#021B05] text-center md:text-left">Your Cart</h1>
-        <p className="text-sm font-medium text-[#5E5E5E] mt-1 text-center md:text-left pb-20">
+        <h1 className="text-4xl font-medium text-[#021B05] text-center lg:text-left">Your Cart</h1>
+        <p className="text-sm font-medium text-[#5E5E5E] mt-1 text-center lg:text-left pb-0">
           {cart.items?.length || 0} items are added.
         </p>
 

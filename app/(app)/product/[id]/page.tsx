@@ -224,10 +224,10 @@ export default function ProductDetailPage() {
     <Navbar/>
   <div className="pt-3 min-h-screen bg-[#F2FAF2]">
     {/* MAIN PRODUCTSECTION */}
-    <div className="max-w-6xl mx-auto px-4 md:px-6 md:py-12 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-14">
+    <div className="max-w-6xl mx-auto px-4 md:px-6 md:py-12 grid grid-cols-1 md:grid-cols-2 md:gap-8 lg:gap-14">
 
       {/* IMAGE SECTION */}
-      <div className="relative flex justify-center">
+      <div className="relative flex flex-col items-center ">
         <div className="w-full max-w-md border-2 border-[#05360B] rounded-sm p-2">
           <img
             src={p.imageUrl}
@@ -236,19 +236,20 @@ export default function ProductDetailPage() {
           />
         </div>
 
-        <button className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 border-2 border-black px-2 py-8">
-          <Image src="/left-arrow.png" alt="left-arrow" width={12} height={10}/>
-        </button>
-        <button className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 border-2 border-black px-2 py-8">
-          <Image src="/right-arrow.png" alt="right-arrow" width={12} height={10}/>
-        </button>
-      </div>
-      <div className="flex justify-center gap-2 mt-3 md:hidden">
+         <div className="flex justify-center gap-2 mt-3 lg:hidden">
   <span className="w-2 h-2 rounded-full bg-[#021B05]" />
   <span className="w-2 h-2 rounded-full bg-[#A7C5AA]" />
   <span className="w-2 h-2 rounded-full bg-[#A7C5AA]" />
   <span className="w-2 h-2 rounded-full bg-[#A7C5AA]" />
 </div>
+
+        <button className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 border-2 border-black px-2 py-8">
+          <Image src="/left-arrow.png" alt="left-arrow" width={12} height={10}/>
+        </button>
+        <button className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 border-2 border-black px-2 py-8">
+          <Image src="/right-arrow.png" alt="right-arrow" width={12} height={10}/>
+        </button>
+      </div>
 
       {/* PRODUCT DETAILS */}
       <div className="flex flex-col gap-6">
@@ -315,7 +316,7 @@ export default function ProductDetailPage() {
         {/* QUANTITY */}
         <div>
           <p className="text-base font-bold mb-2">QUANTITY</p>
-          <div className="flex items-center justify-between gap-4 border border-black rounded-full w-[140px] h-[45px] px-1 mx-auto md:mx-0">
+          <div className="flex items-center justify-between gap-4 border border-black rounded-full w-[160px] sm:w-[140px] h-[45px] px-1 md:mx-0">
             <button  className="
       w-9 h-9
       rounded-full
@@ -386,9 +387,9 @@ export default function ProductDetailPage() {
   </div>
 </section>
 
-<section className="relative min-h-screen bg-[#021B02] pt-20">
+<section className="relative min-h-screen bg-[#021B02] pt-20 overflow-x-hidden">
 
-  <div className="hidden md:flex md:absolute md:inset-0 md:pointer-events-none md:z-0">
+  <div className="hidden lg:flex md:absolute md:inset-0 md:pointer-events-none md:z-0">
     <img src="/image518.png" alt="" 
     className="absolute
     top-[100px]
@@ -414,16 +415,17 @@ export default function ProductDetailPage() {
   {reviews.length === 0 ? (
     <p className="text-center text-gray-300">No reviews yet.</p>
   ) : (
+    <div className="px-6">
 <div className="flex
     gap-6
-    overflow-x-auto
-    px-6
+    overflow-x-auto md:overflow-x-visible
+    overflow-y-hidden
     snap-x snap-mandatory
     scroll-smooth
+    no-scrollbar
 
     md:justify-center
-    md:flex-wrap
-    md:overflow-visible">
+    md:flex-wrap">
   {reviews.slice(0,4).map((review, index) =>
     index % 2 === 0 ? (
       <StarReviewCard key={review._id} review={review} />
@@ -431,6 +433,7 @@ export default function ProductDetailPage() {
       <ImageReviewCard key={review._id} review={review} />
     )
   )}
+</div>
 </div>
   )}
 </section>
