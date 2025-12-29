@@ -148,6 +148,11 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!session?.user?.email) {
+      alert("User email not found. Please login again.");
+      return;
+    }
+
     setProcessing(true);
 
     try {
@@ -157,7 +162,10 @@ export default function CheckoutPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          shippingAddress,
+          shippingAddress: {
+            ...shippingAddress,
+            email: session.user.email
+          },
           isDirect: isDirectBuy 
         }),
       });
@@ -302,73 +310,273 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">
-        {searchParams.get("type") === "direct" ? "Buy Now Checkout" : "Checkout"}
-      </h1>
+    <div className="min-h-screen bg-[#F0FAF0]">
+      {/* Header */}
+      <div className="w-full bg-[#021B05] py-3 fixed top-0 z-50 shadow-md">
+        <div className="container mx-auto px-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+            <span className="font-bold text-sm md:text-lg">ALCHER STORE</span>
+          </div>
+          <img 
+            src="/images/auth/logo.svg" 
+            alt="Alcheringa Logo" 
+            className="object-contain h-8 md:h-10 lg:h-12 w-auto"
+          />
+          <div className="w-16 md:w-32"></div> {/* Spacer for centering */}
+        </div>
+      </div>
 
-      {cartItems.length === 0 ? (
-         <div className="text-center">
-            <p>Your cart is empty.</p>
-            <button onClick={() => router.push("/")} className="mt-4 bg-blue-500 text-white px-6 py-2 rounded">
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8 pt-24 max-w-6xl">
+        {/* Tabs */}
+        <div className="flex items-center gap-2 sm:gap-4 mb-6 sm:mb-8 overflow-x-auto">
+          <div className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base md:text-lg font-semibold whitespace-nowrap">
+            <span>Cart</span>
+            <span className="text-xl sm:text-2xl">💎</span>
+          </div>
+          <div className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base md:text-lg font-semibold text-gray-600 whitespace-nowrap">
+            <span>Delivery Address</span>
+            <span className="text-xl sm:text-2xl">❤️</span>
+          </div>
+        </div>
+
+        {cartItems.length === 0 ? (
+          <div className="text-center bg-white rounded-2xl p-8 shadow-lg">
+            <p className="text-gray-700 mb-4">Your cart is empty.</p>
+            <button 
+              onClick={() => router.push("/")} 
+              className="bg-[#2D5F2E] text-white px-6 py-2 rounded-lg hover:bg-[#234A24]"
+            >
               Continue Shopping
             </button>
-         </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left: Shipping Form */}
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Shipping Address</h2>
-            <div className="space-y-4">
-              <input type="text" name="name" placeholder="Full Name *" value={shippingAddress.name} onChange={handleInputChange} className="w-full border px-4 py-2 rounded" required />
-              <input type="tel" name="phone" placeholder="Phone Number *" value={shippingAddress.phone} onChange={handleInputChange} className="w-full border px-4 py-2 rounded" required />
-              <input type="text" name="addressLine1" placeholder="Address Line 1 *" value={shippingAddress.addressLine1} onChange={handleInputChange} className="w-full border px-4 py-2 rounded" required />
-              <input type="text" name="addressLine2" placeholder="Address Line 2 (Optional)" value={shippingAddress.addressLine2} onChange={handleInputChange} className="w-full border px-4 py-2 rounded" />
-              <div className="grid grid-cols-2 gap-4">
-                <input type="text" name="city" placeholder="City *" value={shippingAddress.city} onChange={handleInputChange} className="w-full border px-4 py-2 rounded" required />
-                <input type="text" name="state" placeholder="State *" value={shippingAddress.state} onChange={handleInputChange} className="w-full border px-4 py-2 rounded" required />
-              </div>
-              <input type="text" name="pincode" placeholder="Pincode *" value={shippingAddress.pincode} onChange={handleInputChange} className="w-full border px-4 py-2 rounded" required />
-            </div>
-
-            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-300 rounded">
-              <label className="flex items-center space-x-2">
-                <input type="checkbox" checked={mockMode} onChange={(e) => setMockMode(e.target.checked)} className="w-4 h-4" />
-                <span className="text-sm font-medium">Enable Mock Payment (Testing)</span>
-              </label>
-            </div>
           </div>
-
-          {/* Right: Order Summary */}
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-            <div className="border rounded p-4 space-y-4">
-              {cartItems.map((item) => (
-                <div key={item._id} className="flex gap-4 border-b pb-4">
-                  <img src={item.product.imageUrl || item.product.img} alt={item.product.name} className="w-20 h-20 object-cover rounded" />
-                  <div className="flex-1">
-                    <h3 className="font-medium">{item.product.name}</h3>
-                    {item.size && <p className="text-sm text-gray-600">Size: {item.size}</p>}
-                    <p className="text-sm text-gray-600">Qty: {item.quantity} × ₹{item.price}</p>
-                    <p className="font-semibold">₹{item.price * item.quantity}</p>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left: Shipping Form - Takes 2 columns */}
+            <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-lg">
+              {/* Contact Information */}
+              <div className="mb-6">
+                <h2 className="text-base md:text-lg font-bold mb-4">Contact Information</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">First Name</label>
+                    <input 
+                      type="text" 
+                      name="name" 
+                      placeholder="" 
+                      value={shippingAddress.name.split(' ')[0] || shippingAddress.name} 
+                      onChange={(e) => {
+                        const lastName = shippingAddress.name.split(' ').slice(1).join(' ');
+                        handleInputChange({
+                          ...e,
+                          target: { ...e.target, name: 'name', value: `${e.target.value} ${lastName}`.trim() }
+                        } as any);
+                      }}
+                      className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" 
+                      required 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="" 
+                      value={shippingAddress.name.split(' ').slice(1).join(' ')} 
+                      onChange={(e) => {
+                        const firstName = shippingAddress.name.split(' ')[0] || '';
+                        handleInputChange({
+                          target: { name: 'name', value: `${firstName} ${e.target.value}`.trim() }
+                        } as any);
+                      }}
+                      className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" 
+                    />
                   </div>
                 </div>
-              ))}
 
-              <div className="space-y-2 pt-4">
-                <div className="flex justify-between"><span>Subtotal:</span><span>₹{subtotal}</span></div>
-                <div className="flex justify-between"><span>Shipping:</span><span>{shippingCost === 0 ? "FREE" : `₹${shippingCost}`}</span></div>
-                <div className="flex justify-between"><span>Tax (18% GST):</span><span>₹{tax}</span></div>
-                <div className="flex justify-between text-xl font-bold border-t pt-2"><span>Total:</span><span>₹{total}</span></div>
+                <div className="mt-4">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <input 
+                    type="tel" 
+                    name="phone" 
+                    placeholder="" 
+                    value={shippingAddress.phone} 
+                    onChange={handleInputChange} 
+                    className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" 
+                    required 
+                  />
+                </div>
               </div>
 
-              <button onClick={handleCheckout} disabled={processing} className="w-full bg-green-600 text-white py-3 rounded font-semibold hover:bg-green-700 disabled:bg-gray-400 mt-4">
-                {processing ? "Processing..." : "Proceed to Payment"}
+              {/* Delivery Address */}
+              <div>
+                <h2 className="text-base md:text-lg font-bold mb-4">Delivery Address</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Address Line 1</label>
+                    <input 
+                      type="text" 
+                      name="addressLine1" 
+                      placeholder="" 
+                      value={shippingAddress.addressLine1} 
+                      onChange={handleInputChange} 
+                      className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" 
+                      required 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Address Line 2</label>
+                    <input 
+                      type="text" 
+                      name="addressLine2" 
+                      placeholder="" 
+                      value={shippingAddress.addressLine2} 
+                      onChange={handleInputChange} 
+                      className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" 
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Country</label>
+                      <input 
+                        type="text"
+                        placeholder="India"
+                        defaultValue="India"
+                        className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">State</label>
+                      <input 
+                        type="text"
+                        name="state"
+                        placeholder=""
+                        value={shippingAddress.state}
+                        onChange={handleInputChange}
+                        className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">District</label>
+                      <input 
+                        type="text"
+                        name="city"
+                        placeholder=""
+                        value={shippingAddress.city}
+                        onChange={handleInputChange}
+                        className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">City</label>
+                      <input 
+                        type="text" 
+                        name="city" 
+                        placeholder="" 
+                        value={shippingAddress.city} 
+                        onChange={handleInputChange} 
+                        className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" 
+                        required 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Pincode</label>
+                      <input 
+                        type="text" 
+                        name="pincode" 
+                        placeholder="" 
+                        value={shippingAddress.pincode} 
+                        onChange={handleInputChange} 
+                        className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" 
+                        required 
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mock Payment Toggle */}
+              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
+                <label className="flex items-center space-x-2">
+                  <input 
+                    type="checkbox" 
+                    checked={mockMode} 
+                    onChange={(e) => setMockMode(e.target.checked)} 
+                    className="w-4 h-4" 
+                  />
+                  <span className="text-sm font-medium">Enable Mock Payment (Testing)</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Right: Order Summary - Takes 1 column */}
+            <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg h-fit">
+              <h2 className="text-base md:text-lg font-bold mb-4">Order Summary</h2>
+              
+              <div className="space-y-4 mb-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Subtotal</span>
+                  <span className="font-medium">₹{subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Delivery Charges</span>
+                  <span className="font-medium">₹{shippingCost.toFixed(2)}</span>
+                </div>
+                <div className="border-t pt-4"></div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Subtotal</span>
+                  <span className="font-medium">₹{subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Delivery Charges</span>
+                  <span className="font-medium">₹{shippingCost.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">GST</span>
+                  <span className="font-medium">₹{tax.toFixed(2)}</span>
+                </div>
+                <div className="border-t pt-4 flex justify-between text-lg font-bold">
+                  <span>Total</span>
+                  <span className="text-[#2D5F2E]">₹{total.toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Coupon Section */}
+              <div className="mb-4">
+                <h3 className="text-xs sm:text-sm font-bold mb-2">Coupon</h3>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input 
+                    type="text" 
+                    placeholder="Enter Code" 
+                    className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500" 
+                  />
+                  <button className="bg-[#2D5F2E] text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-[#234A24] w-full sm:w-auto">
+                    Submit
+                  </button>
+                </div>
+              </div>
+
+              {/* Proceed Button */}
+              <button 
+                onClick={handleCheckout} 
+                disabled={processing} 
+                className="w-full bg-[#2D5F2E] text-white py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-semibold hover:bg-[#234A24] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              >
+                {processing ? "Processing..." : "Next"}
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
