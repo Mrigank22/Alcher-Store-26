@@ -32,7 +32,7 @@ export default function Footer() {
             <div className="flex items-start gap-4">
               <div className="relative w-10 h-14 sm:w-12 sm:h-16 shrink-0 mt-1">
                 <Image
-                  src="/footer-icon.png"
+                  src="/footer-icon.svg"
                   alt="Alcheringa Icon"
                   fill
                   className="object-contain object-top"

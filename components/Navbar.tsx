@@ -27,7 +27,7 @@ export default function Navbar() {
            <Link href="/" className="block">
              <div className="drop-shadow-[0_6px_10px_rgba(0,0,0,0.9)]">
                <Image 
-                 src="/logo.png" 
+                 src="/logo.svg" 
                  alt="Alcheringa Logo" 
                  width={200} 
                  height={80} 
