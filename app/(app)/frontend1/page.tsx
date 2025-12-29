@@ -14,13 +14,43 @@ export default function FirstPage() {
       <div className="flex-1 flex flex-col items-center pt-3 sm:pt-5 md:pt-7 lg:pt-9 px-4 relative max-w-[1920px] mx-auto w-full">
 
         {/* Top Text */}
-        <p className="font-geist font-black text-[#0b0b0b] text-[10px] sm:text-xs md:text-sm uppercase tracking-[0.08em] mb-3 sm:mb-4 relative z-40">
-          Buy Alcheringa 2026 Official Merchandise
-        </p>
+       {/* Top Secondary Text */}
+<p
+  className="
+    font-geist
+    font-medium
+    uppercase
+    text-[#6b6b6b]
+    tracking-[0.14em]
+    leading-none
+
+    whitespace-nowrap
+    text-center
+    mx-auto
+    relative
+    z-40
+    mb-2
+
+    /* 🔻 mobile-first: VERY small */
+    text-[8px]
+    scale-[0.7]
+
+    /* phones / small screens */
+    sm:text-[9px]
+    sm:scale-[0.78]
+
+    /* ≥640px: relax slightly */
+    md:text-[10px]
+    md:scale-[0.9]
+  "
+>
+  Buy Alcheringa 2026 Official Merchandise
+</p>
+
 
         {/* HEADLINE */}
-        <div className="relative w-full max-w-7xl mx-auto text-center z-40">
-          <div className="flex flex-col items-center leading-none">
+        <div className="relative w-full max-w-7xl min-[550px]:max-[639px]:max-w-[375px] mx-auto text-center z-40">
+          <div className="flex flex-col items-center leading-none w-full">
             <h1 className="font-gotham font-black text-black text-[24px] xs:text-[32px] sm:text-[44px] md:text-[58px] lg:text-[76px] xl:text-[94px] leading-[0.95] whitespace-nowrap">
               OFFICIAL ALCHERINGA
             </h1>
@@ -41,58 +71,26 @@ export default function FirstPage() {
               pointer-events-none
             "
           >
-            {/* TOP CLOUDS */}
             <div className="absolute inset-0 z-10">
-              {/* Top Left */}
               <div className="absolute inset-0 -translate-y-[28%] scale-[0.95]">
-                <Image
-                  src="/cloud-top-left.png"
-                  alt="Top Left Cloud"
-                  fill
-                  className="object-contain object-left"
-                  priority
-                />
+                <Image src="/cloud-top-left.png" alt="Top Left Cloud" fill className="object-contain object-left" priority />
               </div>
-
-              {/* Top Right */}
               <div className="absolute inset-0 -translate-y-[40%] scale-[0.95]">
-                <Image
-                  src="/cloud-top-right.png"
-                  alt="Top Right Cloud"
-                  fill
-                  className="object-contain object-right"
-                  priority
-                />
+                <Image src="/cloud-top-right.png" alt="Top Right Cloud" fill className="object-contain object-right" priority />
               </div>
             </div>
 
-            {/* MAIN CLOUDS */}
             <div className="absolute inset-0 z-20">
-              {/* Left main cloud */}
               <div className="absolute left-0 top-0 h-full w-[92%]">
-                <Image
-                  src="/cloud-left.png"
-                  alt="Left Cloud"
-                  fill
-                  className="object-contain object-left"
-                  priority
-                />
+                <Image src="/cloud-left.png" alt="Left Cloud" fill className="object-contain object-left" priority />
               </div>
-
-              {/* Right main cloud */}
-              <Image
-                src="/cloud-right.png"
-                alt="Right Cloud"
-                fill
-                className="object-contain object-right"
-                priority
-              />
+              <Image src="/cloud-right.png" alt="Right Cloud" fill className="object-contain object-right" priority />
             </div>
           </div>
         </div>
 
         {/* WHITE BOX */}
-        <div className="relative w-full max-w-[300px] sm:max-w-[420px] md:max-w-[580px] lg:max-w-[760px] xl:max-w-[900px] -mt-2 sm:-mt-3 md:-mt-4 lg:-mt-5 xl:-mt-6 z-20">
+        <div className="relative w-full max-w-[300px] sm:max-w-[420px] md:max-w-[580px] lg:max-w-[760px] xl:max-w-[900px] min-[550px]:max-[639px]:max-w-[368px] -mt-2 sm:-mt-3 md:-mt-4 lg:-mt-5 xl:-mt-6 z-20">
           <div className="bg-white border-[2.5px] sm:border-[3px] md:border-[3.5px] border-dashed border-[#CCCCCC] rounded-[24px] sm:rounded-[32px] md:rounded-[40px] w-full aspect-[4/3] sm:aspect-[16/10] md:aspect-[16/9] shadow-lg flex items-center justify-center">
             <span className="opacity-20 font-gotham font-bold text-gray-300 text-sm sm:text-lg md:text-2xl">
               (MERCH DISPLAY IMAGE)
@@ -100,21 +98,27 @@ export default function FirstPage() {
           </div>
         </div>
 
-        {/* BOTTOM BANNER */}
+        {/* ===== BOTTOM BANNER (ONLY DIALOGUE MOVED) ===== */}
         <div className="relative mt-8 sm:mt-12 md:mt-16 lg:mt-20 mb-4 sm:mb-6 w-full flex justify-center items-end z-40">
           <div className="relative flex items-end">
-            <div className="relative w-[280px] sm:w-[360px] md:w-[450px] lg:w-[550px] h-[70px] sm:h-[90px] md:h-[110px] lg:h-[130px]">
-              <Image src="/dialogue-box.png" alt="Dialogue" fill className="object-contain" />
-              <div className="absolute inset-0 flex items-center justify-center -mt-2 sm:-mt-3">
-                <h3 className="font-gotham font-black text-[#052e16] text-xs sm:text-sm md:text-base lg:text-lg uppercase tracking-[0.06em]">
-                  Order Your Merch Today
-                </h3>
+
+            {/* Dialogue box — slightly up & closer to clown */}
+            <div className="relative z-50 -translate-y-4 sm:-translate-y-6 -mr-2 sm:mr-0">
+              <div className="relative w-[250px] sm:w-[300px] md:w-[410px] lg:w-[500px] h-[70px] sm:h-[90px] md:h-[110px] lg:h-[130px]">
+                <Image src="/dialogue-box.png" alt="Dialogue" fill className="object-contain" />
+                <div className="absolute inset-0 flex items-center justify-center -mt-2 sm:-mt-3">
+                  <h3 className="font-gotham font-black text-[#052e16] text-xs sm:text-sm md:text-base lg:text-lg uppercase tracking-[0.06em]">
+                    Order Your Merch Today
+                  </h3>
+                </div>
               </div>
             </div>
 
-            <div className="relative w-28 h-36 sm:w-36 sm:h-44 md:w-44 md:h-56 lg:w-52 lg:h-64 -ml-4 sm:-ml-6 md:-ml-8">
+            {/* Clown — UNCHANGED */}
+            <div className="relative w-24 h-32 sm:w-36 sm:h-44 md:w-44 md:h-56 lg:w-52 lg:h-64 -ml-6 sm:-ml-8 md:-ml-10">
               <Image src="/clown.png" alt="Clown" fill className="object-contain object-bottom" />
             </div>
+
           </div>
         </div>
       </div>
