@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcrypt";
-import User from "@/models/User";
 import OTP from "@/models/OTP";
 import TempUser from "@/models/TempUser";
 import { connectDB } from "@/lib/mongodb";
@@ -12,27 +10,33 @@ function generateOTP(): string {
 }
 
 export async function POST(req: Request) {
-  const { name, email, password, phone } = await req.json();
-  await connectDB();
+  const { email } = await req.json();
 
-  // Check if user already exists
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
+  if (!email) {
     return NextResponse.json(
-      { message: "User already exists" },
+      { message: "Email is required" },
       { status: 400 }
     );
   }
 
-  // Generate OTP
+  await connectDB();
+
+  // Check if temp user exists
+  const tempUser = await TempUser.findOne({ email });
+  
+  if (!tempUser) {
+    return NextResponse.json(
+      { message: "Registration data not found. Please start registration again." },
+      { status: 400 }
+    );
+  }
+
+  // Generate new OTP
   const otp = generateOTP();
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-  // Delete any existing OTPs and temp user data for this email
+  // Delete old OTP and create new one
   await OTP.deleteMany({ email });
-  await TempUser.deleteMany({ email });
-
-  // Store OTP in database
   await OTP.create({
     email,
     otp,
@@ -40,18 +44,11 @@ export async function POST(req: Request) {
     verified: false,
   });
 
-  // Hash password and store user data temporarily
-  const hashedPassword = await bcrypt.hash(password, 10);
-  
-  await TempUser.create({
-    name,
-    email,
-    phone: phone || "",
-    password: hashedPassword,
-    expiresAt,
-  });
-  
-  // Send OTP via email
+  // Update temp user expiration
+  tempUser.expiresAt = expiresAt;
+  await tempUser.save();
+
+  // Send new OTP via email
   const emailResult = await sendOTPEmail(email, otp);
   
   if (!emailResult.success) {
@@ -62,10 +59,7 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json(
-    { 
-      message: "OTP sent to your email. Please verify to complete registration.",
-      email,
-    },
+    { message: "New OTP sent to your email!" },
     { status: 200 }
   );
 }
