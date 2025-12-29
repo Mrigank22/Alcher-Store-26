@@ -194,7 +194,7 @@ export default function Home() {
                       )}
                     </p>
 
-                    <button
+                    {/* <button
                       disabled={totalStock === 0}
                       onClick={() =>
                         hasVariants
@@ -204,7 +204,18 @@ export default function Home() {
                       className="w-full bg-blue-500 text-white py-2 rounded disabled:bg-gray-300"
                     >
                       {hasVariants ? "View Options" : "Add to Cart"}
-                    </button>
+                    </button> */}
+
+                    <button
+  disabled={totalStock === 0}
+  onClick={() =>
+    router.push(`/product/${product.product_id}`)
+  }
+  className="w-full bg-blue-500 text-white py-2 rounded disabled:bg-gray-300"
+>
+  {hasVariants ? "View Options" : "View"}
+</button>
+
                   </div>
                 </div>
               );
