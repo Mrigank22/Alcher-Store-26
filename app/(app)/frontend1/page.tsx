@@ -65,8 +65,10 @@ export default function FirstPage() {
           <div
             className="
               absolute left-1/2 -translate-x-1/2
-              -top-[45px] min-[450px]:-top-[58px] min-[550px]:-top-[75px] sm:-top-[95px] md:-top-[120px] lg:-top-[150px] xl:-top-[180px]
+              -top-[45px] min-[450px]:-top-[58px] min-[550px]:-top-[75px] sm:-top-[95px] md:-top-[120px] min-[874px]:max-[1276px]:-top-[165px]
+lg:-top-[150px] xl:-top-[180px]
               w-[160%]
+              min-[424px]:max-[449px]:w-[190%]
               h-[120px] min-[450px]:h-[155px] min-[550px]:h-[195px] sm:h-[240px] md:h-[280px] lg:h-[320px] xl:h-[360px]
               pointer-events-none
             "
