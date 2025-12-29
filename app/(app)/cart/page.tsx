@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import CartItem from "./CartItem";
 import Link from "next/link";
-// import Navbar from "@/components/Navbar";
+import Navbar from "@/components/Navbar";
 
 async function getCart(email: string) {
   const h = await headers();
@@ -31,7 +31,7 @@ export default async function CartPage() {
 
 <div className="relative min-h-screen bg-[#F3F9F3] overflow-hidden">
 
-  {/* <Navbar/> */}
+  <Navbar/>
 
 <div className="hidden lg:flex absolute inset-0 pointer-events-none overflow-hidden z-0">
 
