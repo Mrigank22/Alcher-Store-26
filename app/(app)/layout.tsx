@@ -1,21 +1,24 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Montserrat, Geist } from "next/font/google"; // Import fonts
 import "./globals.css";
 import SessionWrapper from "./SessionWrapper";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// 1. Setup Montserrat (Looks like Gotham)
+const montserrat = Montserrat({
   subsets: ["latin"],
+  weight: ["400", "600", "900"], // Regular, SemiBold, Black
+ variable: "--font-gotham",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// 2. Setup Geist 
+const geist = Geist({
   subsets: ["latin"],
+  variable: "--font-geist",
 });
 
 export const metadata: Metadata = {
-  title: "Alcheringa Store",
-  description: "E-commerce store for Alcheringa fest",
+  title: "Alcher Store 2026",
+  description: "Official Alcheringa Merchandise",
 };
 
 export default function RootLayout({
@@ -25,9 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${montserrat.variable} ${geist.variable} antialiased`}>
         <SessionWrapper>{children}</SessionWrapper>
       </body>
     </html>
