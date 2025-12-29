@@ -2,6 +2,21 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SessionWrapper from "./SessionWrapper";
+import { Bahianita } from "next/font/google";
+import { Montserrat } from "next/font/google";
+
+export const bahianita = Bahianita({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-bahianita",
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  variable: "--font-montserrat",
+});
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${bahianita.variable} ${montserrat.variable} antialiased`}
       >
         <SessionWrapper>{children}</SessionWrapper>
       </body>
