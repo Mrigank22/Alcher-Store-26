@@ -7,7 +7,7 @@ import Image from "next/image";
 import JokerNew from "@/components/JokerNew";
 import StarReviewCard from "@/components/reviews/StarReviewCard";
 import ImageReviewCard from "@/components/reviews/ImageReviewCard";
-import Navbar from "@/components/Navbar";
+// import Navbar from "@/components/Navbar";
 
 /* ================= TYPES ================= */
 
@@ -221,7 +221,7 @@ export default function ProductDetailPage() {
 
   return (
     <>
-    <Navbar/>
+    {/* <Navbar/> */}
   <div className="pt-3 min-h-screen bg-[#F2FAF2]">
     {/* MAIN PRODUCTSECTION */}
     <div className="max-w-6xl mx-auto px-4 md:px-6 md:py-12 grid grid-cols-1 md:grid-cols-2 md:gap-8 lg:gap-14">
