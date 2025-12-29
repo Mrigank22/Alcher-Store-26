@@ -50,7 +50,7 @@ export default function LoginPage() {
             <div className="flex flex-col gap-2">
               <label className="font-bold text-sm text-black ml-1">Password</label>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter Text Here" className="w-full bg-[#EFF7F0] border border-gray-400 rounded-xl px-6 py-3.5 outline-none focus:border-[#18B123] text-black font-medium" />
-              <div className="text-right mt-1"><Link href="/forgot-password" class="text-xs text-[#18B123] font-bold hover:underline uppercase tracking-wide">FORGOT PASSWORD?</Link></div>
+              <div className="text-right mt-1"><Link href="/forgot-password" className="text-xs text-[#18B123] font-bold hover:underline uppercase tracking-wide">FORGOT PASSWORD?</Link></div>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
                 <button type="submit" disabled={loading} className="flex-1 bg-[#18B123] hover:bg-[#14991e] text-white font-bold py-3.5 rounded-full shadow-md transition-transform active:scale-95 text-base">{loading ? "Logging in..." : "Log In"}</button>
