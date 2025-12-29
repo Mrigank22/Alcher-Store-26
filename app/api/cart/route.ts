@@ -31,7 +31,18 @@ export async function GET(req: Request) {
   const cart = await Cart.findOne({ user_email: email })
     .populate("items.product");
 
-  return NextResponse.json(cart || { items: [] });
+  // return NextResponse.json(cart || { items: [] });
+   if (!cart) {
+    return NextResponse.json({ items: [] });
+  }
+
+  cart.items = cart.items.filter(
+    (item: any) => item.product !== null
+  );
+  recalcCart(cart);
+  await cart.save();
+
+  return NextResponse.json(cart);
 }
 
 /* ADD TO CART  */

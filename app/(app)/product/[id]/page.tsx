@@ -7,6 +7,7 @@ import Image from "next/image";
 import JokerNew from "@/components/JokerNew";
 import StarReviewCard from "@/components/reviews/StarReviewCard";
 import ImageReviewCard from "@/components/reviews/ImageReviewCard";
+import Navbar from "@/components/Navbar";
 
 /* ================= TYPES ================= */
 
@@ -217,147 +218,10 @@ export default function ProductDetailPage() {
     }
   }
 
-  //   <div className="min-h-screen bg-gray-50">
-  //     {/* HEADER */}
-  //     <header className="bg-white shadow">
-  //       <div className="container mx-auto px-4 py-4 flex justify-between">
-  //         <button onClick={() => router.push("/")} className="text-blue-500">
-  //           ← Back
-  //         </button>
-  //         {session && (
-  //           <button
-  //             onClick={() => router.push("/cart")}
-  //             className="bg-blue-500 text-white px-4 py-2 rounded"
-  //           >
-  //             🛒 Cart
-  //           </button>
-  //         )}
-  //       </div>
-  //     </header>
-
-  //     {/* PRODUCT */}
-  //     <div className="container mx-auto px-4 py-8">
-  //       <div className="bg-white rounded-lg shadow-lg max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
-  //         <img
-  //           src={p.imageUrl}
-  //           alt={p.name}
-  //           className="w-full h-96 object-cover rounded-l-lg"
-  //         />
-
-  //         <div className="p-6">
-  //           <h1 className="text-3xl font-bold mb-2">{p.name}</h1>
-  //           <p className="text-3xl font-bold text-green-600 mb-4">₹{p.price}</p>
-
-  //           {p.description && (
-  //             <p className="text-gray-600 mb-4">{p.description}</p>
-  //           )}
-
-  //           {p.hasSize && (
-  //             <div className="mb-4">
-  //               <p className="font-semibold mb-2">Select Size:</p>
-  //               <div className="flex gap-2 flex-wrap">
-  //                 {p.variants.map(
-  //                   (v) =>
-  //                     v.size && (
-  //                       <button
-  //                         key={v.size}
-  //                         disabled={v.stock === 0}
-  //                         onClick={() => setSelectedSize(v.size!)}
-  //                         className={`px-4 py-2 border rounded ${
-  //                           selectedSize === v.size
-  //                             ? "bg-blue-500 text-white"
-  //                             : "bg-white"
-  //                         } ${
-  //                           v.stock === 0 && "opacity-40 cursor-not-allowed"
-  //                         }`}
-  //                       >
-  //                         {v.size}
-  //                       </button>
-  //                     )
-  //                 )}
-  //               </div>
-  //             </div>
-  //           )}
-
-  //           <div className="mb-4 flex items-center gap-3">
-  //             <button
-  //               onClick={() => setQuantity(Math.max(1, quantity - 1))}
-  //               className="px-3 py-1 bg-gray-200 rounded"
-  //             >
-  //               −
-  //             </button>
-  //             <span className="text-lg">{quantity}</span>
-  //             <button
-  //               onClick={() =>
-  //                 setQuantity(Math.min(selectedSizeStock, quantity + 1))
-  //               }
-  //               className="px-3 py-1 bg-gray-200 rounded"
-  //             >
-  //               +
-  //             </button>
-  //           </div>
-
-  //           <div className="flex gap-4">
-  //             <button
-  //               onClick={addToCart}
-  //               disabled={adding || isOutOfStock}
-  //               className="flex-1 bg-green-600 text-white py-3 rounded"
-  //             >
-  //               {adding ? "Adding..." : "Add to Cart"}
-  //             </button>
-
-  //             <button
-  //               onClick={handleBuyNow}
-  //               disabled={buying || isOutOfStock}
-  //               className="flex-1 bg-orange-600 text-white py-3 rounded"
-  //             >
-  //               {buying ? "Processing..." : "⚡ Buy Now"}
-  //             </button>
-  //           </div>
-  //         </div>
-  //       </div>
-
-  //       {/* ================= REVIEWS ================= */}
-  //       <section className="max-w-4xl mx-auto mt-12">
-  //         <h2 className="text-2xl font-bold mb-4">Customer Reviews</h2>
-
-  //         {reviews.length === 0 ? (
-  //           <p className="text-gray-500">No reviews yet.</p>
-  //         ) : (
-  //           <div className="space-y-4">
-  //             {reviews.map((review) => (
-  //               <div
-  //                 key={review._id}
-  //                 className="border rounded-lg p-4 bg-white"
-  //               >
-  //                 <div className="flex justify-between mb-1">
-  //                   <p className="font-semibold">{review.userName}</p>
-  //                   <span className="text-yellow-500">
-  //                     {"★".repeat(review.rating)}
-  //                     {"☆".repeat(5 - review.rating)}
-  //                   </span>
-  //                 </div>
-  //                 <p className="text-gray-700">{review.content}</p>
-  //                 <p className="text-xs text-gray-400 mt-2">
-  //                   {new Date(review.createdAt).toLocaleDateString()}
-  //                 </p>
-  //               </div>
-  //             ))}
-  //           </div>
-  //         )}
-
-  //         {session && (
-  //           <div className="mt-6">
-  //             <AddReview product_id={p.product_id} onSuccess={fetchReviews} />
-  //           </div>
-  //         )}
-  //       </section>
-  //     </div>
-  //   </div>
-  // );
 
   return (
     <>
+    <Navbar/>
   <div className="pt-3 min-h-screen bg-[#F2FAF2]">
     {/* MAIN PRODUCTSECTION */}
     <div className="max-w-6xl mx-auto px-4 md:px-6 md:py-12 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-14">
@@ -524,7 +388,7 @@ export default function ProductDetailPage() {
 
 <section className="relative min-h-screen bg-[#021B02] pt-20">
 
-  <div className="absolute inset-0 pointer-events-none z-0">
+  <div className="hidden md:flex md:absolute md:inset-0 md:pointer-events-none md:z-0">
     <img src="/image518.png" alt="" 
     className="absolute
     top-[100px]

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import CartItem from "./CartItem";
 import Link from "next/link";
+import Navbar from "@/components/Navbar";
 
 async function getCart(email: string) {
   const h = await headers();
@@ -30,39 +31,50 @@ export default async function CartPage() {
 
 <div className="relative min-h-screen bg-[#F3F9F3] overflow-hidden">
 
-<div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+  <Navbar/>
+
+<div className="hidden md:flex absolute inset-0 pointer-events-none overflow-hidden z-0">
 
   <img
   src="/image516.png"
   alt=""
   className="absolute
-  top-[90px]
-  left-[-135px]"/>
+  md:top-[90px]
+  md:left-[-135px]"/>
 
   <img src="/image517.png" 
   alt="" 
   className="absolute
-  top-[100px]
-  left-[-100px]"/>
-</div>
+  md:top-[100px]
+  md:left-[-100px]"/>
 
-<img src="/image514.png" 
+  <img src="/image514.png" 
 alt=""
 className="absolute
-top-[-90px]
-left-[995px]"/>
+md:top-[-90px]
+md:left-[995px]"/>
 
 <img src="/image515.png"
 alt=""
 className="absolute
-top-[15px]
-left-[560px]"/>
+md:top-[15px]
+md:left-[560px]"/>
+</div>
 
-      
-      <div className="relative max-w-6xl mx-auto px-6 pt-8 pb-10 z-10">
+<div className="md:hidden flex absolute inset-0 pointer-events-none overflow-hidden z-0">
+  <img src="/group410.png" alt="" 
+  className="absolute
+  top-[90px]
+  left-0"/>
+   <img src="/group409.png" alt="" 
+  className="absolute
+  top-[75px]
+  right-0"/>
+</div>
+      <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-10 z-10">
         
         <h1 className="text-4xl font-medium text-[#021B05] text-center md:text-left">Your Cart</h1>
-        <p className="text-sm font-medium text-[#5E5E5E] mt-1 text-center md:text-left">
+        <p className="text-sm font-medium text-[#5E5E5E] mt-1 text-center md:text-left pb-20">
           {cart.items?.length || 0} items are added.
         </p>
 

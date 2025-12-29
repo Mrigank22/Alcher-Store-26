@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image"
 
+
 export default function CartItem({
   item,
   email,
@@ -62,6 +63,7 @@ export default function CartItem({
   }
   }
 
+  if (!item?.product) return null;
   return (
     <div className="relative flex flex-col md:flex-row md:items-center gap-3 md:gap-4 bg-white border border-black rounded-xl p-4 shadow-[4px_5px_4px_0px_rgba(0,0,0,0.25)]">
       <img
