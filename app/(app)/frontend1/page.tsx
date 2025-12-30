@@ -6,8 +6,49 @@ import Footer from "@/components/Footer";
 import MerchBox from "@/components/MerchBox" ;
 import PromoGrid from "@/components/PromoGrid"
 import Newsletter from "@/components/Newsletter";
+import StarReviewCard from "@/components/reviews/StarReviewCard";
+import ImageReviewCard from "@/components/reviews/ImageReviewCard";
+import { useEffect, useState } from "react";
 
+
+type Review = {
+  _id: string;
+  userName: string;
+  content: string;
+  rating: number;
+  createdAt: string;
+};
 export default function FirstPage() {
+  //   const [reviews, setReviews] = useState<Review[]>([]);
+
+  //  async function fetchReviews() {
+  //   try {
+  //     const res = await fetch(`/api/reviews?productId=${productId}`);
+  //     const data = await res.json();
+  //     setReviews(Array.isArray(data) ? data : []);
+  //   } catch (err) {
+  //     console.error("Review fetch error:", err);
+  //     setReviews([]);
+  //   }
+  // }
+
+  const [reviews, setReviews] = useState<Review[]>([]);
+
+useEffect(() => {
+  fetchReviews();
+}, []);
+
+async function fetchReviews() {
+  try {
+    const res = await fetch("/api/reviews"); // ✅ no productId
+    const data = await res.json();
+    setReviews(Array.isArray(data) ? data : []);
+  } catch (err) {
+    console.error("Review fetch error:", err);
+    setReviews([]);
+  }
+}
+
   return (
     <main className="min-h-screen bg-[#F2FBF6] relative overflow-hidden font-sans flex flex-col">
       <Navbar />
@@ -129,6 +170,58 @@ lg:-top-[150px] xl:-top-[180px]
 
       <MerchBox/>
       <PromoGrid/>
+
+      <section className="relative min-h-screen bg-[#021B02] pt-20 overflow-x-hidden">
+      
+        <div className="hidden lg:flex md:absolute md:inset-0 md:pointer-events-none md:z-0">
+          <img src="/image518.png" alt="" 
+          className="absolute
+          top-[100px]
+          left-[920px]"/>
+          <img src="/image519.png" alt="" 
+          className="absolute
+          top-[250px]
+          left-[705px]"/>
+           <img src="/image520.png" alt="" 
+          className="absolute
+          top-[150px]
+          left-[-40px]"/>
+          <img src="/image521.png" alt="" 
+          className="absolute
+          top-[250px]
+          left-[-40px]"/>
+        </div>
+      
+      
+        <h2 className="text-center text-5xl font-bold text-white mb-12">
+          REVIEWS
+        </h2>
+        {reviews.length === 0 ? (
+          <p className="text-center text-gray-300">No reviews yet.</p>
+        ) : (
+          <div className="px-6">
+      <div className="flex
+          gap-6
+          overflow-x-auto md:overflow-x-visible
+          overflow-y-hidden
+          snap-x snap-mandatory
+          scroll-smooth
+          no-scrollbar
+      
+          md:justify-center
+          md:flex-wrap">
+        {reviews.slice(0,4).map((review, index) =>
+          index % 2 === 0 ? (
+            <StarReviewCard key={review._id} review={review} />
+          ) : (
+            <ImageReviewCard key={review._id} review={review} />
+          )
+        )}
+      </div>
+      </div>
+        )}
+      </section>
+
       <Newsletter />
       <Footer />
     </main>
