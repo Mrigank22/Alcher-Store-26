@@ -1,22 +1,14 @@
 import Image from "next/image";
 import { ReactNode } from "react";
+import Navbar from "./Navbar";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <main className="min-h-screen bg-[#F0FAF0] relative overflow-hidden font-sans flex flex-col pt-[70px] md:pt-[100px]">
       
-      {/* --- HEADER --- */}
-      <div className="w-full bg-[#021B05] py-3 fixed top-0 z-50 shadow-md">
-        <div className="container mx-auto flex justify-center">
-            <Image 
-              src="/images/auth/logo.svg" 
-              alt="Alcheringa Logo" 
-              width={140} 
-              height={50} 
-              className="object-contain h-10 md:h-12 w-auto"
-              priority
-            />
-        </div>
+      {/* --- NAVBAR --- */}
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Navbar />
       </div>
 
       {/* --- BACKGROUND CLOUDS --- */}
