@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import AddReview from "@/components/AddReview";
+import Image from "next/image";
+import JokerNew from "@/components/JokerNew";
+import StarReviewCard from "@/components/reviews/StarReviewCard";
+import ImageReviewCard from "@/components/reviews/ImageReviewCard";
+import Navbar from "@/components/Navbar";
 
 /* ================= TYPES ================= */
 
@@ -214,145 +218,226 @@ export default function ProductDetailPage() {
     }
   }
 
-  /* ================= UI ================= */
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* HEADER */}
-      <header className="bg-white shadow">
-        <div className="container mx-auto px-4 py-4 flex justify-between">
-          <button onClick={() => router.push("/")} className="text-blue-500">
-            ← Back
-          </button>
-          {session && (
-            <button
-              onClick={() => router.push("/cart")}
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              🛒 Cart
-            </button>
-          )}
-        </div>
-      </header>
+    <>
+    <Navbar/>
+  <div className="pt-3 min-h-screen bg-[#F2FAF2]">
+    {/* MAIN PRODUCTSECTION */}
+    <div className="max-w-6xl mx-auto px-4 md:px-6 md:py-12 grid grid-cols-1 md:grid-cols-2 md:gap-8 lg:gap-14">
 
-      {/* PRODUCT */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-lg max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
+      {/* IMAGE SECTION */}
+      <div className="relative flex flex-col items-center ">
+        <div className="w-full max-w-md border-2 border-[#05360B] rounded-sm p-2">
           <img
             src={p.imageUrl}
             alt={p.name}
-            className="w-full h-96 object-cover rounded-l-lg"
+            className="w-full h-[380px] md:h-[550px] object-cover bg-gray-200 border-[1.5px] border-[#05360B]"
           />
+        </div>
 
-          <div className="p-6">
-            <h1 className="text-3xl font-bold mb-2">{p.name}</h1>
-            <p className="text-3xl font-bold text-green-600 mb-4">₹{p.price}</p>
+         <div className="flex justify-center gap-2 mt-3 lg:hidden">
+  <span className="w-2 h-2 rounded-full bg-[#021B05]" />
+  <span className="w-2 h-2 rounded-full bg-[#A7C5AA]" />
+  <span className="w-2 h-2 rounded-full bg-[#A7C5AA]" />
+  <span className="w-2 h-2 rounded-full bg-[#A7C5AA]" />
+</div>
 
-            {p.description && (
-              <p className="text-gray-600 mb-4">{p.description}</p>
-            )}
+        <button className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 border-2 border-black px-2 py-8">
+          <Image src="/left-arrow.png" alt="left-arrow" width={12} height={10}/>
+        </button>
+        <button className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 border-2 border-black px-2 py-8">
+          <Image src="/right-arrow.png" alt="right-arrow" width={12} height={10}/>
+        </button>
+      </div>
 
-            {p.hasSize && (
-              <div className="mb-4">
-                <p className="font-semibold mb-2">Select Size:</p>
-                <div className="flex gap-2 flex-wrap">
-                  {p.variants.map(
-                    (v) =>
-                      v.size && (
-                        <button
-                          key={v.size}
-                          disabled={v.stock === 0}
-                          onClick={() => setSelectedSize(v.size!)}
-                          className={`px-4 py-2 border rounded ${
-                            selectedSize === v.size
-                              ? "bg-blue-500 text-white"
-                              : "bg-white"
-                          } ${
-                            v.stock === 0 && "opacity-40 cursor-not-allowed"
-                          }`}
-                        >
-                          {v.size}
-                        </button>
-                      )
-                  )}
-                </div>
-              </div>
-            )}
+      {/* PRODUCT DETAILS */}
+      <div className="flex flex-col gap-6">
+        <div>
+          <h1 className="text-[28px] md:text-[40px] font-medium mb-1">{p.name}</h1>
+          <p className=" text-xs md:text-sm font-semibold text-[#5E5E5E]">Regular Fit T-Shirt</p>
+        </div>
 
-            <div className="mb-4 flex items-center gap-3">
-              <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-3 py-1 bg-gray-200 rounded"
-              >
-                −
-              </button>
-              <span className="text-lg">{quantity}</span>
-              <button
-                onClick={() =>
-                  setQuantity(Math.min(selectedSizeStock, quantity + 1))
-                }
-                className="px-3 py-1 bg-gray-200 rounded"
-              >
-                +
-              </button>
+        {p.description && (
+          <p className="text-sm font-semibold leading-relaxed text-black max-w-full md:max-w-md">
+            {/* {p.description} */}
+            Excepteur ut qui esse labore cupidatat officia quis veniam occaecat pariatur velit excepteur ex Lorem. Sint qui minim amet non esse culpa anim. Elit laborum veniam aliquip exercitation anim laborum consectetur irure cupidatat aliquip ipsum consectetur anim ad cupidatat. Nisi occaecat nulla incididunt proident cupidatat enim anim eiusmod amet duis minim laboris.
+          </p>
+        )}
+
+        {/* COLOURS (UI only) */}
+        {/* <div>
+          <p className="text-xs font-semibold mb-2">COLOURS</p>
+          <div className="flex gap-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="w-7 h-7 rounded-full bg-gray-300"
+              />
+            ))}
+          </div>
+        </div> */}
+
+        {/* SIZE */}
+        {p.hasSize && (
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <p className="text-base font-bold">SIZE</p>
+              <span className="text-sm text-[#188123] font-medium underline cursor-pointer">
+                SIZE CHART
+              </span>
             </div>
 
-            <div className="flex gap-4">
-              <button
-                onClick={addToCart}
-                disabled={adding || isOutOfStock}
-                className="flex-1 bg-green-600 text-white py-3 rounded"
-              >
-                {adding ? "Adding..." : "Add to Cart"}
-              </button>
-
-              <button
-                onClick={handleBuyNow}
-                disabled={buying || isOutOfStock}
-                className="flex-1 bg-orange-600 text-white py-3 rounded"
-              >
-                {buying ? "Processing..." : "⚡ Buy Now"}
-              </button>
+            <div className="flex gap-4 flex-wrap">
+              {p.variants.map(
+                (v) =>
+                  v.size && (
+                    <button
+                      key={v.size}
+                      disabled={v.stock === 0}
+                      onClick={() => setSelectedSize(v.size!)}
+                      className={`px-4 md:px-6 py-1.5 md:py-2 rounded-full text-sm md:text-base border transition font-medium
+                        ${
+                          selectedSize === v.size
+                            ? "bg-[#1F7A1F] text-white"
+                            : "bg-[#D1E9D4] text-[#5E5E5E]"
+                        }
+                        ${v.stock === 0 && "opacity-40 cursor-not-allowed"}
+                      `}
+                    >
+                      {v.size}
+                    </button>
+                  )
+              )}
             </div>
+          </div>
+        )}
+
+        {/* QUANTITY */}
+        <div>
+          <p className="text-base font-bold mb-2">QUANTITY</p>
+          <div className="flex items-center justify-between gap-4 border border-black rounded-full w-[160px] sm:w-[140px] h-[45px] px-1 md:mx-0">
+            <button  className="
+      w-9 h-9
+      rounded-full
+      bg-[#D1E9D4]
+      text-black
+      flex items-center justify-center
+      text-[24px]
+      font-semibold
+      leading-none
+      disabled:opacity-50
+    " onClick={() => setQuantity(Math.max(1, quantity - 1)) }>
+              -
+            </button>
+            <span className="font-semibold text-base ">{quantity}</span>
+            <button
+            className="
+      w-9 h-9
+      rounded-full
+      bg-[#D1E9D4]
+      text-black
+      flex items-center justify-center
+      text-[24px]
+      font-semibold
+      leading-none
+      disabled:opacity-50
+    "
+              onClick={() =>
+                setQuantity(Math.min(selectedSizeStock, quantity + 1))
+              }
+            >
+              +
+            </button>
           </div>
         </div>
 
-        {/* ================= REVIEWS ================= */}
-        <section className="max-w-4xl mx-auto mt-12">
-          <h2 className="text-2xl font-bold mb-4">Customer Reviews</h2>
+        {/* ACTION BUTTONS */}
+        <div className="flex flex-col md:flex-row gap-3 mt-4">
+          <button
+            onClick={addToCart}
+            disabled={adding || isOutOfStock}
+            className="px-10 py-3 rounded-full bg-[#1B9328] text-[#F0FAF0] font-bold md:w-[250px]"
+          >
+            {adding ? "Adding..." : "Add to Cart"}
+          </button>
 
-          {reviews.length === 0 ? (
-            <p className="text-gray-500">No reviews yet.</p>
-          ) : (
-            <div className="space-y-4">
-              {reviews.map((review) => (
-                <div
-                  key={review._id}
-                  className="border rounded-lg p-4 bg-white"
-                >
-                  <div className="flex justify-between mb-1">
-                    <p className="font-semibold">{review.userName}</p>
-                    <span className="text-yellow-500">
-                      {"★".repeat(review.rating)}
-                      {"☆".repeat(5 - review.rating)}
-                    </span>
-                  </div>
-                  <p className="text-gray-700">{review.content}</p>
-                  <p className="text-xs text-gray-400 mt-2">
-                    {new Date(review.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {session && (
-            <div className="mt-6">
-              <AddReview product_id={p.product_id} onSuccess={fetchReviews} />
-            </div>
-          )}
-        </section>
+          <button
+            onClick={handleBuyNow}
+            disabled={buying || isOutOfStock}
+            className="px-10 py-3 rounded-full bg-[#D1E9D4] text-black font-medium md:w-[250px]"
+          >
+            {buying ? "Processing..." : "Buy Now"}
+          </button>
+        </div>
       </div>
     </div>
-  );
+  </div>
+
+  {/* something new part */}
+
+  <JokerNew/>
+
+  <section className="bg-[#F0FAF0] pt-8 min-h-screen">
+  {/* Heading */}
+  <div className="max-w-6xl mx-auto px-6 text-center">
+    <h2 className="text-[24px] md:text-[48px] font-medium text-[#05360B] tracking-wide">
+      CHECK OUT OUR OTHER PRODUCTS
+    </h2>
+  </div>
+</section>
+
+<section className="relative min-h-screen bg-[#021B02] pt-20 overflow-x-hidden">
+
+  <div className="hidden lg:flex md:absolute md:inset-0 md:pointer-events-none md:z-0">
+    <img src="/image518.png" alt="" 
+    className="absolute
+    top-[100px]
+    left-[920px]"/>
+    <img src="/image519.png" alt="" 
+    className="absolute
+    top-[250px]
+    left-[705px]"/>
+     <img src="/image520.png" alt="" 
+    className="absolute
+    top-[150px]
+    left-[-40px]"/>
+    <img src="/image521.png" alt="" 
+    className="absolute
+    top-[250px]
+    left-[-40px]"/>
+  </div>
+
+
+  <h2 className="text-center text-5xl font-bold text-white mb-12">
+    REVIEWS
+  </h2>
+  {reviews.length === 0 ? (
+    <p className="text-center text-gray-300">No reviews yet.</p>
+  ) : (
+    <div className="px-6">
+<div className="flex
+    gap-6
+    overflow-x-auto md:overflow-x-visible
+    overflow-y-hidden
+    snap-x snap-mandatory
+    scroll-smooth
+    no-scrollbar
+
+    md:justify-center
+    md:flex-wrap">
+  {reviews.slice(0,4).map((review, index) =>
+    index % 2 === 0 ? (
+      <StarReviewCard key={review._id} review={review} />
+    ) : (
+      <ImageReviewCard key={review._id} review={review} />
+    )
+  )}
+</div>
+</div>
+  )}
+</section>
+</>
+);
+
 }

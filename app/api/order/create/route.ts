@@ -196,7 +196,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Find order by orderId (string) not _id (ObjectId)
+    // Find order by orderId string (e.g., "ORD-20251229-55020")
     const order = await Order.findOne({ orderId }).populate("items.product");
 
     if (!order) {

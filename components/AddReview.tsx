@@ -33,6 +33,7 @@ export default function AddReview({
         rating,
         userName: session.user.name, // ✅ REQUIRED
         userId: session.user.id,     // optional
+        userImage:session?.user?.image,
       }),
     });
 
