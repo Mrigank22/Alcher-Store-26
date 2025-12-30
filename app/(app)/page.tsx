@@ -33,7 +33,6 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-
   /* ================= FETCH ================= */
 
   useEffect(() => {
@@ -138,10 +137,9 @@ export default function Home() {
       </header>
 
       {/* ADMIN ADD PRODUCT */}
-        <section className="container mx-auto px-4 py-8">
-          <AddProduct />
-        </section>
-
+      {/* <section className="container mx-auto px-4 py-8">
+        <AddProduct />
+      </section> */}
       {/* PRODUCT LIST */}
       <main className="container mx-auto px-4 py-8">
         <h2 className="text-2xl font-semibold mb-6">Available Products</h2>

@@ -21,10 +21,10 @@ export async function POST() {
         hasSize: true,
         hasColor: false,
         variants: [
-          { size: "S", stock: 20 },
-          { size: "M", stock: 30 },
-          { size: "L", stock: 25 },
-          { size: "XL", stock: 15 },
+          { size: "S", stock: 2000 },
+          { size: "M", stock: 3000 },
+          { size: "L", stock: 2500 },
+          { size: "XL", stock: 1500 },
         ],
       },
       {
@@ -36,10 +36,10 @@ export async function POST() {
         hasSize: true,
         hasColor: false,
         variants: [
-          { size: "S", stock: 10 },
-          { size: "M", stock: 20 },
-          { size: "L", stock: 15 },
-          { size: "XL", stock: 10 },
+          { size: "S", stock: 1000 },
+          { size: "M", stock: 2000 },
+          { size: "L", stock: 1500 },
+          { size: "XL", stock: 1000 },
         ],
       },
       {
@@ -51,10 +51,10 @@ export async function POST() {
         hasSize: true,
         hasColor: false,
         variants: [
-          { size: "S", stock: 15 },
-          { size: "M", stock: 25 },
-          { size: "L", stock: 20 },
-          { size: "XL", stock: 10 },
+          { size: "S", stock: 1500 },
+          { size: "M", stock: 2500 },
+          { size: "L", stock: 2000 },
+          { size: "XL", stock: 1000 },
         ],
       },
 
@@ -67,7 +67,7 @@ export async function POST() {
           "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=500",
         hasSize: false,
         hasColor: false,
-        variants: [{ stock: 50 }],
+        variants: [{ stock: 5000 }],
       },
       {
         product_id: "ALCH005",
@@ -77,7 +77,7 @@ export async function POST() {
           "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500",
         hasSize: false,
         hasColor: false,
-        variants: [{ stock: 30 }],
+        variants: [{ stock: 3000 }],
       },
       {
         product_id: "ALCH006",
@@ -87,7 +87,7 @@ export async function POST() {
           "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=500",
         hasSize: false,
         hasColor: false,
-        variants: [{ stock: 100 }],
+        variants: [{ stock: 1000 }],
       },
       {
         product_id: "ALCH007",
@@ -97,7 +97,7 @@ export async function POST() {
           "https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=500",
         hasSize: false,
         hasColor: false,
-        variants: [{ stock: 200 }],
+        variants: [{ stock: 2000 }],
       },
     ];
 
