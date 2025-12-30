@@ -6,6 +6,8 @@ import Order from "@/models/Order";
 import Payment from "@/models/Payment";
 import Cart from "@/models/Cart";
 import Product from "@/models/Product";
+import { generateInvoicePDF } from "@/lib/generateInvoicePDF";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 
 /**
  * POST /api/payment/verify
@@ -92,6 +94,14 @@ export async function POST(req: NextRequest) {
       order.razorpaySignature = "mock_signature";
       order.paymentDate = new Date();
 
+      // Generate invoice number if not exists
+      if (!order.invoiceNumber) {
+        const date = new Date();
+        const dateStr = date.toISOString().slice(0, 10).replace(/-/g, "");
+        const random = Math.floor(10000 + Math.random() * 90000);
+        order.invoiceNumber = `INV-${dateStr}-${random}`;
+      }
+
       payment.status = "success";
       payment.razorpayPaymentId = razorpay_payment_id;
       payment.razorpaySignature = "mock_signature";
@@ -99,6 +109,16 @@ export async function POST(req: NextRequest) {
 
       await order.save();
       await payment.save();
+
+      // Generate and save invoice PDF
+      try {
+        const invoiceUrl = await generateInvoicePDF(order);
+        order.invoiceUrl = invoiceUrl;
+        await order.save();
+      } catch (invoiceError) {
+        console.error("Error generating invoice:", invoiceError);
+        // Don't fail the payment if invoice generation fails
+      }
 
       // Clear user's cart
       await Cart.findOneAndUpdate(
@@ -108,6 +128,14 @@ export async function POST(req: NextRequest) {
 
       // Reduce stock (optional)
       await reduceStock(order);
+
+      // Send order confirmation email
+      try {
+        await sendOrderConfirmationEmail(order);
+      } catch (emailError) {
+        console.error("Error sending order confirmation email:", emailError);
+        // Don't fail the payment if email fails
+      }
 
       return NextResponse.json({
         success: true,
@@ -160,6 +188,14 @@ export async function POST(req: NextRequest) {
     order.razorpaySignature = razorpay_signature;
     order.paymentDate = new Date();
 
+    // Generate invoice number if not exists
+    if (!order.invoiceNumber) {
+      const date = new Date();
+      const dateStr = date.toISOString().slice(0, 10).replace(/-/g, "");
+      const random = Math.floor(10000 + Math.random() * 90000);
+      order.invoiceNumber = `INV-${dateStr}-${random}`;
+    }
+
     payment.status = "success";
     payment.razorpayPaymentId = razorpay_payment_id;
     payment.razorpaySignature = razorpay_signature;
@@ -167,6 +203,16 @@ export async function POST(req: NextRequest) {
 
     await order.save();
     await payment.save();
+
+    // Generate and save invoice PDF
+    try {
+      const invoiceUrl = await generateInvoicePDF(order);
+      order.invoiceUrl = invoiceUrl;
+      await order.save();
+    } catch (invoiceError) {
+      console.error("Error generating invoice:", invoiceError);
+      // Don't fail the payment if invoice generation fails
+    }
 
     // Clear user's cart
     await Cart.findOneAndUpdate(
@@ -176,6 +222,14 @@ export async function POST(req: NextRequest) {
 
     // Reduce stock quantities
     await reduceStock(order);
+
+    // Send order confirmation email
+    try {
+      await sendOrderConfirmationEmail(order);
+    } catch (emailError) {
+      console.error("Error sending order confirmation email:", emailError);
+      // Don't fail the payment if email fails
+    }
 
     return NextResponse.json({
       success: true,
@@ -205,23 +259,20 @@ async function reduceStock(order: any) {
       
       if (!product) continue;
 
-      if (product.size_boolean && item.size) {
-        // Update specific size stock
-        const stockItem = product.stock.find(
-          (s: any) => s.size === item.size
-        );
-        if (stockItem) {
-          stockItem.quantity = Math.max(0, stockItem.quantity - item.quantity);
-        }
-      } else {
-        // Update general stock
-        product.stock_quantity = Math.max(
-          0,
-          product.stock_quantity - item.quantity
-        );
-      }
+      // Find the variant matching size/color
+      const variantIndex = product.variants.findIndex(
+        (v: any) => 
+          (!product.hasSize || v.size === item.size) &&
+          (!product.hasColor || v.color === item.colour)
+      );
 
-      await product.save();
+      if (variantIndex !== -1) {
+        product.variants[variantIndex].stock = Math.max(
+          0,
+          product.variants[variantIndex].stock - item.quantity
+        );
+        await product.save();
+      }
     }
   } catch (error) {
     console.error("Error reducing stock:", error);

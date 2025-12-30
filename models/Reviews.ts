@@ -35,6 +35,7 @@ const reviewSchema = new mongoose.Schema(
       min: 1,
       max: 5,
     },
+    userImage: { type: String },
   },
   {
     timestamps: true,

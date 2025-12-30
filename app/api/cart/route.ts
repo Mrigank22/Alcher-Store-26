@@ -31,36 +31,68 @@ export async function GET(req: Request) {
   const cart = await Cart.findOne({ user_email: email })
     .populate("items.product");
 
-  return NextResponse.json(cart || { items: [] });
+  // return NextResponse.json(cart || { items: [] });
+   if (!cart) {
+    return NextResponse.json({ items: [] });
+  }
+
+  cart.items = cart.items.filter(
+    (item: any) => item.product !== null
+  );
+  recalcCart(cart);
+  await cart.save();
+
+  return NextResponse.json(cart);
 }
 
 /* ADD TO CART  */
 export async function POST(req: Request) {
   await connectDB();
-  const { email, product,size,colour, quantity = 1 } = await req.json();
+  const { email, product, size, colour, quantity = 1 } = await req.json();
 
   if (!email || !product) {
     return NextResponse.json(
-      { error: "Email, product and size required" },
+      { error: "Email and product required" },
       { status: 400 }
     );
   }
 
   const productDoc = await Product.findById(product);
-if (!productDoc) {
-  return NextResponse.json(
-    { error: "Product not found" },
-    { status: 404 }
-  );
-}
+  if (!productDoc) {
+    return NextResponse.json(
+      { error: "Product not found" },
+      { status: 404 }
+    );
+  }
 
-if (productDoc.size_boolean && !size) {
-  return NextResponse.json(
-    { error: "Please select a size" },
-    { status: 400 }
-  );
-}
+  // Validate variant selection for products with size/color
+  if (productDoc.hasSize && !size) {
+    return NextResponse.json(
+      { error: "Please select a size" },
+      { status: 400 }
+    );
+  }
 
+  if (productDoc.hasColor && !colour) {
+    return NextResponse.json(
+      { error: "Please select a color" },
+      { status: 400 }
+    );
+  }
+
+  // Validate stock for selected variant
+  const selectedVariant = productDoc.variants.find(
+    (v: any) => 
+      (!productDoc.hasSize || v.size === size) &&
+      (!productDoc.hasColor || v.color === colour)
+  );
+
+  if (!selectedVariant || selectedVariant.stock < quantity) {
+    return NextResponse.json(
+      { error: "Insufficient stock for selected variant" },
+      { status: 400 }
+    );
+  }
 
   let cart = await Cart.findOne({ user_email: email });
 
@@ -71,12 +103,13 @@ if (productDoc.size_boolean && !size) {
     });
   }
 
-   const existingItem = cart.items.find(
-    (i: any) =>
-      i.product.toString() === product &&
-      i.size === size &&
-      i.colour === colour
-  );
+  const existingItem = cart.items.find((i: any) => {
+  if (i.product.toString() !== product) return false;
+  if (size && i.size !== size) return false;
+  if (colour && i.colour !== colour) return false;
+  return true;
+});
+
 
   if (existingItem) {
     existingItem.quantity += quantity;
@@ -104,7 +137,7 @@ export async function PATCH(req: Request) {
   const { email, product, size, colour, quantity } =
     await req.json();
 
-  if (!email || !product || !size || quantity < 1) {
+  if (!email || !product || quantity < 1) {
     return NextResponse.json(
       { error: "Invalid data" },
       { status: 400 }
@@ -126,17 +159,38 @@ export async function PATCH(req: Request) {
     );
   }
 
-  const item = cart.items.find(
-    (i: any) =>
-      i.product.toString() === product &&
-      i.size === size &&
-      i.colour === colour
-  );
+    const item = cart.items.find((i: any) => {
+    if (i.product.toString() !== product) return false;
+    if (size && i.size !== size) return false;
+    if (colour && i.colour !== colour) return false;
+    return true;
+  });
 
   if (!item) {
     return NextResponse.json(
       { error: "Item not found" },
       { status: 404 }
+    );
+  }
+  
+  const productDoc = await Product.findById(product);
+  if (!productDoc) {
+    return NextResponse.json(
+      { error: "Product not found" },
+      { status: 404 }
+    );
+  }
+
+  const selectedVariant = productDoc.variants.find(
+    (v: any) =>
+      (!productDoc.hasSize || v.size === size) &&
+      (!productDoc.hasColor || v.color === colour)
+  );
+
+  if (!selectedVariant || selectedVariant.stock < quantity) {
+    return NextResponse.json(
+      { error: "Insufficient stock" },
+      { status: 400 }
     );
   }
 
@@ -169,14 +223,10 @@ export async function DELETE(req: Request) {
   }
 
   cart.items = cart.items.filter((i: any) => {
-    if (i.size) {
-      return !(
-        i.product.toString() === product &&
-        i.size === size &&
-        i.colour === colour
-      );
-    }
-    return i.product.toString() !== product;
+    if (i.product.toString() !== product) return true;
+    if (size && i.size !== size) return true;
+    if (colour && i.colour !== colour) return true;
+    return false;
   });
 
   recalcCart(cart);
