@@ -25,23 +25,94 @@ export default function SignupPage() {
       return;
     }
     setLoading(true);
-    // Simulate API
-    setTimeout(() => { 
-        setLoading(false); 
-        setMessage("OTP sent to your email"); 
-        setStep("verify"); 
-    }, 1500);
+    setMessage("");
+    
+    try {
+      const response = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          lastName: form.lastName,
+          email: form.email,
+          password: form.password,
+          phone: form.phone,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setMessage("OTP sent to your email. Please check your inbox.");
+        setStep("verify");
+      } else {
+        setMessage(data.message || "Failed to send OTP. Please try again.");
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      setMessage("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!otp || otp.length !== 6) {
+      setMessage("Please enter a valid 6-digit OTP");
+      return;
+    }
+    
     setLoading(true);
-    setTimeout(() => { setLoading(false); router.push("/login"); }, 1500);
+    setMessage("");
+    
+    try {
+      const response = await fetch("/api/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email, otp }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setMessage("Account created successfully! Redirecting to login...");
+        setTimeout(() => router.push("/login"), 1500);
+      } else {
+        setMessage(data.message || "Invalid OTP. Please try again.");
+      }
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      setMessage("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleResendOTP = async () => {
     setLoading(true);
-    setTimeout(() => { setLoading(false); setMessage("OTP Resent"); }, 1000);
+    setMessage("");
+    
+    try {
+      const response = await fetch("/api/resend-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setMessage("OTP resent successfully. Please check your email.");
+      } else {
+        setMessage(data.message || "Failed to resend OTP. Please try again.");
+      }
+    } catch (error) {
+      console.error("Resend OTP error:", error);
+      setMessage("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
