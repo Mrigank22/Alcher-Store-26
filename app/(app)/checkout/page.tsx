@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation"; // Added useSearchParams
 import { useSession } from "next-auth/react";
+import Navbar from "@/components/Navbar";
 
 interface CartItem {
   _id: string;
@@ -311,22 +312,9 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-[#F0FAF0]">
-      {/* Header */}
-      <div className="w-full bg-[#021B05] py-3 fixed top-0 z-50 shadow-md">
-        <div className="container mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-            <span className="font-bold text-sm md:text-lg">ALCHER STORE</span>
-          </div>
-          <img 
-            src="/images/auth/logo.svg" 
-            alt="Alcheringa Logo" 
-            className="object-contain h-8 md:h-10 lg:h-12 w-auto"
-          />
-          <div className="w-16 md:w-32"></div> {/* Spacer for centering */}
-        </div>
+      {/* Navbar */}
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Navbar />
       </div>
 
       {/* Main Content */}
