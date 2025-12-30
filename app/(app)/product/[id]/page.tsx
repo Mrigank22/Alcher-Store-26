@@ -8,7 +8,7 @@ import JokerNew from "@/components/JokerNew";
 import StarReviewCard from "@/components/reviews/StarReviewCard";
 import ImageReviewCard from "@/components/reviews/ImageReviewCard";
 import Navbar from "@/components/Navbar";
-
+import MerchBox from "@/components/MerchBox"
 /* ================= TYPES ================= */
 
 type Variant = {
@@ -384,6 +384,7 @@ export default function ProductDetailPage() {
     <h2 className="text-[24px] md:text-[48px] font-medium text-[#05360B] tracking-wide">
       CHECK OUT OUR OTHER PRODUCTS
     </h2>
+    <MerchBox/>
   </div>
 </section>
 
