@@ -12,7 +12,7 @@ function generateOTP(): string {
 }
 
 export async function POST(req: Request) {
-  const { name, email, password, phone } = await req.json();
+  const { name, lastName, email, password, phone } = await req.json();
   await connectDB();
 
   // Check if user already exists
@@ -43,8 +43,11 @@ export async function POST(req: Request) {
   // Hash password and store user data temporarily
   const hashedPassword = await bcrypt.hash(password, 10);
   
+  // Combine first name and last name
+  const fullName = lastName ? `${name} ${lastName}` : name;
+  
   await TempUser.create({
-    name,
+    name: fullName,
     email,
     phone: phone || "",
     password: hashedPassword,
