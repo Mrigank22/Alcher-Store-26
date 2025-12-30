@@ -10,7 +10,7 @@ type Product = {
 
 export default function ProductCard({ product }: { product: Product }) {
   return (
-    <div className="w-full max-w-[460px]">
+    <div className="w-full max-w-[460px] font-gotham">
       {/* IMAGE + FRAME */}
       <Link href={`/product/${product.product_id}`} className="block">
         <div
@@ -92,29 +92,29 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* PRICE BOX */}
         <div
           className="
-    shrink-0
-    px-3 
-    py-2
-    bg-white 
-    shadow-[2px_2px_2px_0px_rgba(0,0,0,0.25)]
-    outline 
-    outline-2 
-    outline-offset-[-1px] 
-    outline-white  
-    flex 
-    justify-center 
-    items-center
+          shrink-0
+          px-3 
+          py-2
+          bg-white 
+          shadow-[2px_2px_2px_0px_rgba(0,0,0,0.25)]
+          outline 
+          outline-2 
+          outline-offset-[-1px] 
+          outline-white  
+          flex 
+          justify-center 
+          items-center
   "
         >
           <h3
             className="
-      text-xs 
-      sm:text-sm 
-      lg:text-base
-      text-green-400 
-      font-extrabold 
-      whitespace-nowrap
-    "
+                    text-xs 
+                    sm:text-sm 
+                    lg:text-base
+                    text-green-400 
+                    font-extrabold 
+                    whitespace-nowrap
+              "
           >
             Rs {product.price}/-
           </h3>

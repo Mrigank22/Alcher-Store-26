@@ -3,6 +3,8 @@
 import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import Footer from "@/components/Footer";
+import MerchBox from "@/components/MerchBox" ;
+import PromoGrid from "@/components/PromoGrid"
 import Newsletter from "@/components/Newsletter";
 
 export default function FirstPage() {
@@ -125,6 +127,8 @@ lg:-top-[150px] xl:-top-[180px]
         </div>
       </div>
 
+      <MerchBox/>
+      <PromoGrid/>
       <Newsletter />
       <Footer />
     </main>
