@@ -45,14 +45,26 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const product_id = searchParams.get("productId");
 
-    if (!product_id) {
-      return NextResponse.json([], { status: 200 });
+    // if (!product_id) {
+    //   return NextResponse.json([], { status: 200 });
+    // }
+
+    // const reviews = await Review.find({ product_id })
+    //   .sort({ createdAt: -1 })
+    //   .lean();
+
+    let reviews;
+
+    if (product_id) {
+      reviews = await Review.find({ product_id })
+        .sort({ createdAt: -1 })
+        .lean();
+    } else {
+      reviews = await Review.find()
+        .sort({ createdAt: -1 })
+        .limit(4)
+        .lean();
     }
-
-    const reviews = await Review.find({ product_id })
-      .sort({ createdAt: -1 })
-      .lean();
-
     return NextResponse.json(reviews, { status: 200 });
   } catch (err) {
     console.error("REVIEW FETCH ERROR:", err);
