@@ -4,9 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { data: session } = useSession();
 
   return (
     <nav className="bg-[#052e16] text-white py-1.5 sm:py-2 md:py-2.5 px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 relative z-50 shadow-md overflow-visible">
@@ -52,13 +54,27 @@ export default function Navbar() {
             <span className="text-[8px] xs:text-[9px] sm:text-[10px] md:text-[10px] lg:text-xs font-semibold uppercase tracking-[0.05em] whitespace-nowrap">Cart</span>
           </Link>
 
-          {/* Login Button - Hidden on mobile */}
-          <Link 
-            href="/login" 
-            className="hidden sm:flex items-center bg-white text-[#052e16] hover:bg-gray-100 px-3 sm:px-4 md:px-5 lg:px-6 py-1.5 sm:py-1.5 md:py-2 rounded-full transition-colors shadow-sm hover:shadow-md"
-          >
-            <span className="text-[9px] sm:text-[10px] md:text-[10px] lg:text-xs font-black uppercase tracking-[0.05em] whitespace-nowrap">Login</span>
-          </Link>
+          {/* Login/Profile Button - Hidden on mobile */}
+          {session?.user ? (
+            <Link 
+              href="/profile" 
+              className="hidden sm:flex items-center gap-1.5 sm:gap-2 bg-white text-[#052e16] hover:bg-gray-100 px-3 sm:px-4 md:px-5 lg:px-6 py-1.5 sm:py-1.5 md:py-2 rounded-full transition-colors shadow-sm hover:shadow-md"
+            >
+              <div className="relative w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0">
+                <Image src="/user-icon.svg" alt="User" fill className="object-contain" />
+              </div>
+              <span className="text-[9px] sm:text-[10px] md:text-[10px] lg:text-xs font-black uppercase tracking-[0.05em] whitespace-nowrap">
+                {session.user.name?.split(' ')[0] || 'Profile'}
+              </span>
+            </Link>
+          ) : (
+            <Link 
+              href="/login" 
+              className="hidden sm:flex items-center bg-white text-[#052e16] hover:bg-gray-100 px-3 sm:px-4 md:px-5 lg:px-6 py-1.5 sm:py-1.5 md:py-2 rounded-full transition-colors shadow-sm hover:shadow-md"
+            >
+              <span className="text-[9px] sm:text-[10px] md:text-[10px] lg:text-xs font-black uppercase tracking-[0.05em] whitespace-nowrap">Login</span>
+            </Link>
+          )}
 
           {/* Mobile Menu Toggle */}
           <button 
@@ -74,13 +90,26 @@ export default function Navbar() {
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
         <div className="sm:hidden absolute top-full left-0 w-full bg-[#052e16] border-t border-white/10 p-4 flex flex-col items-center gap-3 shadow-xl animate-in slide-in-from-top-2 duration-200">
-          <Link 
-            href="/login" 
-            className="bg-white text-[#052e16] hover:bg-gray-100 px-8 py-2.5 rounded-full font-bold text-xs w-full max-w-xs text-center uppercase tracking-wide shadow-md transition-all"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            LOGIN
-          </Link>
+          {session?.user ? (
+            <Link 
+              href="/profile" 
+              className="bg-white text-[#052e16] hover:bg-gray-100 px-8 py-2.5 rounded-full font-bold text-xs w-full max-w-xs text-center uppercase tracking-wide shadow-md transition-all flex items-center justify-center gap-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <div className="relative w-4 h-4">
+                <Image src="/user-icon.svg" alt="User" fill className="object-contain" />
+              </div>
+              {session.user.name?.split(' ')[0] || 'Profile'}
+            </Link>
+          ) : (
+            <Link 
+              href="/login" 
+              className="bg-white text-[#052e16] hover:bg-gray-100 px-8 py-2.5 rounded-full font-bold text-xs w-full max-w-xs text-center uppercase tracking-wide shadow-md transition-all"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              LOGIN
+            </Link>
+          )}
         </div>
       )}
     </nav>
