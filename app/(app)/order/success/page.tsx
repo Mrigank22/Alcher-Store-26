@@ -285,7 +285,7 @@ export default function OrderSuccessPage() {
           {/* Bottom Buttons */}
           <div className="grid grid-cols-2 gap-4 px-6 pb-6">
             <Link
-              href="/orders"
+              href="/profile"
               className="bg-[#2D5F2E] hover:bg-[#234A24] text-white font-semibold py-3 rounded-lg text-center transition-colors"
             >
               Your Orders
