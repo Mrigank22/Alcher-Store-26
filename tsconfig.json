@@ -38,7 +38,8 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts",
     "models/Product.ts",
-    "app/api/admin/product/route.ts"
+    "app/api/admin/product/route.ts",
+    "payload-types.ts"
   ],
   "exclude": [
     "node_modules"

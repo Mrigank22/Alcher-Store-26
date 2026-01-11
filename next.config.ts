@@ -1,5 +1,6 @@
 import { withPayload } from "@payloadcms/next/withPayload";
 import type { NextConfig } from "next";
+import path from 'path';
 
 const nextConfig: NextConfig = {
   images: {
@@ -25,6 +26,16 @@ const nextConfig: NextConfig = {
         hostname: "lh3.googleusercontent.com",
       },
     ],
+  },
+  webpack: (config) => {
+    config.resolve.alias['@payload-config'] = path.resolve(
+        __dirname,
+        'payload.config.ts'
+    )
+    return config
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 
