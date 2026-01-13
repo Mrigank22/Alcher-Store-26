@@ -14,8 +14,8 @@ export async function generateInvoicePDF(order: any): Promise<string> {
     const invoiceHTML = generateInvoiceHTML(order);
     await page.setContent(invoiceHTML, { waitUntil: "networkidle0" });
 
-    // Create invoices directory if it doesn't exist
-    const invoicesDir = path.join(process.cwd(), "public", "invoices");
+    // Create invoices directory outside public folder
+    const invoicesDir = path.join(process.cwd(), "invoices");
     if (!fs.existsSync(invoicesDir)) {
       fs.mkdirSync(invoicesDir, { recursive: true });
     }
@@ -37,8 +37,8 @@ export async function generateInvoicePDF(order: any): Promise<string> {
       },
     });
 
-    // Return the public URL
-    return `/invoices/${pdfFileName}`;
+    // Return just the filename (will be served via API route)
+    return pdfFileName;
   } finally {
     await browser.close();
   }
