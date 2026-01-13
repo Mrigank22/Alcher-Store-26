@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
     );
     
     // You can add logic for shipping and tax calculation
-    const shippingCost = subtotal >= 500 ? 0 : 50; // Free shipping above ₹500
+    const shippingCost = 0; // Free shipping for all orders
     const tax = Math.round(subtotal * 0.18); // 18% GST
     const totalAmount = subtotal + shippingCost + tax;
 

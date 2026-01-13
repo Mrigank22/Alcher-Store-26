@@ -26,8 +26,7 @@
     "puppeteer": "^24.35.0",
     "razorpay": "^2.9.6",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3",
-    "xlsx": "^0.18.5"
+    "react-dom": "^19.2.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",

@@ -6,7 +6,6 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
-import OrderFeedback from "@/components/reviews/OrderFeedback";
 
 interface Order {
   _id: string;
@@ -325,13 +324,14 @@ export default function ProfilePage() {
                             className="flex gap-3 bg-gray-50 rounded-lg p-3"
                           >
                             <div className="w-20 h-20 bg-gray-300 rounded-lg flex-shrink-0 overflow-hidden">
-                              {item.productImage ? (
+                              {item.productImage && typeof item.productImage === 'string' && item.productImage.trim() !== '' ? (
                                 <Image
                                   src={item.productImage}
                                   alt={item.productName}
                                   width={80}
                                   height={80}
                                   className="w-full h-full object-cover"
+                                  unoptimized
                                 />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">
