@@ -27,7 +27,7 @@ async function enrichProductImages(product: any) {
   for (const m of mediaDocs) {
     mediaMap[String(m._id)] = {
       id: m._id,
-      url: `/media/${m.filename}`,
+      url: `/api/media/${m.filename}`,
       alt: m.alt || "",
     };
   }
@@ -106,7 +106,7 @@ export async function GET(req: Request) {
   for (const m of mediaDocs) {
     mediaMap[String(m._id)] = {
       id: m._id,
-      url: `/media/${m.filename}`,
+      url: `/api/media/${m.filename}`,
       alt: m.alt || "",
     };
   }
