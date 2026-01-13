@@ -6,6 +6,7 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
+import OrderFeedback from "@/components/reviews/OrderFeedback";
 
 interface Order {
   _id: string;
@@ -382,6 +383,13 @@ export default function ProfilePage() {
                           </svg>
                         </button>
                       </div>
+                      {/* Feedback Section (only after delivery) */}
+{order.status === "delivered" && (
+  <div className="mt-6 border-t pt-6">
+    <OrderFeedback orderId={order._id} />
+  </div>
+)}
+
 
                       {/* Collapsible Details Section */}
                       {expandedOrders.has(order._id) && (
