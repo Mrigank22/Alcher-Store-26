@@ -27,6 +27,18 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/media/:path*',
+        destination: '/api/media/:path*',
+      },
+      {
+        source: '/invoices/:path*',
+        destination: '/api/invoices/:path*',
+      },
+    ]
+  },
   webpack: (config) => {
     config.resolve.alias['@payload-config'] = path.resolve(
         __dirname,
