@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Navbar from "@/components/Navbar";
+import LoadingScreen from "@/components/LoadingScreen";
 
 interface CartItem {
   _id: string;
@@ -222,13 +223,7 @@ function CheckoutContent() {
 
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-[#F0FAF0]">
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <p className="text-gray-700 text-lg">Loading checkout...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen/>;
   }
 
   return (

@@ -9,6 +9,7 @@ import StarReviewCard from "@/components/reviews/StarReviewCard";
 import ImageReviewCard from "@/components/reviews/ImageReviewCard";
 import Navbar from "@/components/Navbar";
 import MerchBox from "@/components/MerchBox"
+import LoadingScreen from "@/components/LoadingScreen";
 /* ================= TYPES ================= */
 
 type Variant = {
@@ -127,11 +128,7 @@ export default function ProductDetailPage() {
   /* ================= LOADING / NOT FOUND ================= */
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-xl">Loading product...</p>
-      </div>
-    );
+    return <LoadingScreen/>;
   }
 
   if (!product) {
