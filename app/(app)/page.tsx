@@ -22,9 +22,9 @@ type Review = {
 export default function Home() {
   function BannerCarousel() {
   const images = [
-    "/banner_01.png",
-    "/banner_02.png",
-    "/banner_03.png",
+    "/Banner_01.png",
+    "/Banner_02.png",
+    "/Banner_03.png",
   ];
 
   const [current, setCurrent] = useState(0);
