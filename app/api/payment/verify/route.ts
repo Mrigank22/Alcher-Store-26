@@ -56,8 +56,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find order by Razorpay order ID
-    const order = await Order.findOne({ razorpayOrderId: razorpay_order_id });
+    // Find order by Razorpay order ID or mock order ID
+    let order;
+    if (mockMode || razorpay_order_id.startsWith('mock_order_')) {
+      // For mock mode, find the most recent pending order for this user
+      order = await Order.findOne({ 
+        user: user._id,
+        paymentStatus: 'pending'
+      }).sort({ createdAt: -1 });
+    } else {
+      order = await Order.findOne({ razorpayOrderId: razorpay_order_id });
+    }
+    
     if (!order) {
       return NextResponse.json(
         { success: false, message: "Order not found" },
@@ -73,10 +83,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find payment record
-    const payment = await Payment.findOne({
-      razorpayOrderId: razorpay_order_id,
-    });
+    // Find or create payment record for mock mode
+    let payment;
+    if (mockMode || razorpay_order_id.startsWith('mock_order_')) {
+      payment = await Payment.findOne({ orderId: order.orderId });
+      if (!payment) {
+        // Create a payment record for mock mode
+        payment = await Payment.create({
+          order: order._id,
+          user: user._id,
+          gateway: 'mock',
+          razorpayOrderId: razorpay_order_id,
+          amount: order.totalAmount,
+          currency: 'INR',
+          status: 'created',
+        });
+      }
+    } else {
+      payment = await Payment.findOne({
+        razorpayOrderId: razorpay_order_id,
+      });
+    }
 
     if (!payment) {
       return NextResponse.json(

@@ -22,14 +22,21 @@ const PaymentSchema = new Schema(
     // Payment gateway details
     gateway: {
       type: String,
-      enum: ["razorpay", "mock"],
+      enum: ["razorpay", "sbi"],
       required: true,
     },
 
-    // Razorpay specific fields
+    // Generic transaction ID (works for all gateways)
+    transactionId: {
+      type: String,
+      default: null,
+    },
+
+    // Razorpay specific fields (kept for backward compatibility, optional)
     razorpayOrderId: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
     },
     razorpayPaymentId: {
       type: String,
@@ -55,7 +62,13 @@ const PaymentSchema = new Schema(
       default: "created",
     },
 
-    // Transaction metadata
+    // Transaction metadata (flexible for any gateway)
+    metadata: {
+      type: Schema.Types.Mixed,
+      default: {},
+    },
+
+    // Transaction method
     method: {
       type: String, // card, netbanking, upi, etc.
       default: null,
@@ -93,8 +106,11 @@ const PaymentSchema = new Schema(
 );
 
 // Index for quick lookups
-PaymentSchema.index({ razorpayOrderId: 1 });
 PaymentSchema.index({ order: 1 });
 PaymentSchema.index({ user: 1 });
+PaymentSchema.index({ transactionId: 1 });
 
-export default models.Payment || mongoose.model("Payment", PaymentSchema);
+// Force model reload in development
+delete models.Payment;
+
+export default mongoose.model("Payment", PaymentSchema);
