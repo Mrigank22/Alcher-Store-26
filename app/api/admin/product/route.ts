@@ -2,17 +2,56 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Product from "@/models/Product";
 
+// export async function GET() {
+//   await connectDB();
+//   const products = await Product.find();
+//   return Response.json(products);
+// }
+
+import Media from "@/models/Media";
+
 export async function GET() {
   await connectDB();
-  const products = await Product.find();
-  return Response.json(products);
+
+  const products = await Product.find().lean();
+
+  const imageIds = products.flatMap((p) => p.images || []);
+
+  const mediaDocs = await Media.find({
+    _id: { $in: imageIds },
+  }).lean();
+
+  const mediaMap: Record<string, any> = {};
+  for (const m of mediaDocs) {
+    mediaMap[String(m._id)] = {
+      id: m._id,
+      url: `/media/${m.filename}`,
+      alt: m.alt || "",
+    };
+  }
+
+  const enrichedProducts = products.map((p) => ({
+    ...p,
+    images: (p.images || [])
+      .map((id: any) => mediaMap[String(id)])
+      .filter(Boolean),
+  }));
+
+  return Response.json(enrichedProducts);
 }
+
+
 
 export async function POST(req: Request) {
   try {
     await connectDB();
 
     const body = await req.json();
+
+    const images =
+      Array.isArray(body.images) && body.images.length > 0
+        ? body.images
+        : ["/placeholder.png"];
 
     const product = await Product.create({
       product_id: body.product_id,
@@ -21,10 +60,11 @@ export async function POST(req: Request) {
       price: Number(body.price),
       description: body.description ?? "",
 
-      imageUrl:
-        body.imageUrl && body.imageUrl.trim() !== ""
-          ? body.imageUrl
-          : "/placeholder.png",
+     images,                
+      primaryImageIndex:
+        typeof body.primaryImageIndex === "number"
+          ? body.primaryImageIndex
+          : 0,
 
       hasSize: Boolean(body.hasSize),
       hasColor: Boolean(body.hasColor),

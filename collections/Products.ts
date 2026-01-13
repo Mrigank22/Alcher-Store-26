@@ -27,10 +27,16 @@ export const Products: CollectionConfig = {
       type: 'textarea',
     },
     {
-      name: 'image',
-      type: 'upload',
-      relationTo: 'media', // Links to the Media collection
-      required: true,
+      // name: 'image',
+      // type: 'upload',
+      // relationTo: 'media', // Links to the Media collection
+      // required: true,
+       name: 'images',
+       label: 'Product Images',
+       type: 'relationship',
+       relationTo: 'media',
+       hasMany: true, // ⭐ THIS is the key
+       required: true,
     },
     {
       name: 'category',

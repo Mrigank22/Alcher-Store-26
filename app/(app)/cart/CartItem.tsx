@@ -67,7 +67,14 @@ export default function CartItem({
   return (
     <div className="relative flex flex-col md:flex-row md:items-center gap-3 md:gap-4 bg-white border border-black rounded-xl p-4 shadow-[4px_5px_4px_0px_rgba(0,0,0,0.25)]">
       <img
-  src={item.product.imageUrl || item.product.img}
+  src={
+    item.product.images?.[
+      item.product.primaryImageIndex ?? 0
+    ]?.url ||
+    item.product.images?.[0]?.url ||
+    "/placeholder.png"
+  }
+  alt={item.product.name}
   className="w-[120px] h-[130px] object-cover rounded"
 />
 

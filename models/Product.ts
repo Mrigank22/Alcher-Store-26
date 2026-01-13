@@ -53,11 +53,19 @@ const productSchema = new mongoose.Schema(
       default: "Alcher merch",
     },
 
-    imageUrl: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    images: {
+  type: [String],
+  required: true,
+  validate: {
+    validator: (arr: string[]) => arr.length > 0,
+    message: "At least one product image is required",
+  },
+},
+primaryImageIndex: {
+  type: Number,
+  default: 0,
+  min: 0,
+},
 
     /* Flags */
     hasSize: {

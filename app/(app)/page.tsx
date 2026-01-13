@@ -156,7 +156,7 @@ lg:-top-[150px] xl:-top-[180px]
         </div>
       </div>
 
-      <MerchBox/>
+      <MerchBox showHeading={true}/>
       <PromoGrid/>
 
       <section className="relative min-h-screen bg-[#021B02] pt-20 overflow-x-hidden">
