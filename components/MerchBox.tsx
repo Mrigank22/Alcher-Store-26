@@ -3,21 +3,33 @@
 import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 
+type MediaImage = {
+  id: string;
+  url: string;
+  alt?: string;
+};
+
 export type Product = {
   product_id: string;
   name: string;
   price: number;
-  imageUrl: string;
+  images: MediaImage[];   
+  primaryImageIndex?: number;
 };
 
-export default function MerchBox() {
+
+type MerchBoxProps = {
+  showHeading?: boolean;
+};
+
+export default function MerchBox({ showHeading = true }: MerchBoxProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const res = await fetch("/api/admin/product");
+        const res = await fetch("/api/admin/product?depth=1");
         const data = await res.json();
 
         if (Array.isArray(data)) {
@@ -43,9 +55,11 @@ export default function MerchBox() {
 
   return (
     <section className="bg-[#F0FAF0] px-20 py-24 font-gotham" >
-      <div className="text-center text-4xl font-extrabold tracking-wider mb-20 text-green-950 leading-[48px]">
-        MERCHANDISE
-      </div>
+      {showHeading && (
+        <div className="text-center text-4xl font-extrabold tracking-wider mb-20 text-green-950 leading-[48px]">
+          MERCHANDISE
+        </div>
+      )}
 
       <div
         className="
