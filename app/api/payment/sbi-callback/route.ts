@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import Order from "@/models/Order";
 import Payment from "@/models/Payment";
 import { validateSBICallback, SBI_CONFIG, SBIPaymentResponse } from "@/lib/sbi-payment";
+import { generateInvoicePDF } from "@/lib/generateInvoicePDF";
 
 /**
  * POST /api/payment/sbi-callback
@@ -80,8 +81,10 @@ export async function POST(req: NextRequest) {
         amount: paymentResponse.amount,
       });
 
-      // Find the order by SBI transaction ID
-      const order = await Order.findOne({ sbiTransactionId: paymentResponse.transactionId });
+      // Find the order by SBI transaction ID and populate items
+      const order = await Order.findOne({ sbiTransactionId: paymentResponse.transactionId })
+        .populate('items.product')
+        .populate('user');
       
       if (!order) {
         console.error('[SBI Callback] Order not found for transaction:', paymentResponse.transactionId);
@@ -158,6 +161,24 @@ export async function POST(req: NextRequest) {
         };
         
         console.log('[SBI Callback] Payment SUCCESS - Order updated:', order.orderId);
+        
+        // Generate invoice number if not exists
+        if (!order.invoiceNumber) {
+          const date = new Date();
+          const dateStr = date.toISOString().slice(0, 10).replace(/-/g, "");
+          const random = Math.floor(10000 + Math.random() * 90000);
+          order.invoiceNumber = `INV-${dateStr}-${random}`;
+        }
+
+        // Generate and save invoice PDF
+        try {
+          const invoiceFilename = await generateInvoicePDF(order);
+          order.invoiceUrl = invoiceFilename;
+          console.log('[SBI Callback] Invoice generated:', invoiceFilename);
+        } catch (invoiceError) {
+          console.error('[SBI Callback] Error generating invoice:', invoiceError);
+          // Don't fail the payment if invoice generation fails
+        }
         
       } else if (paymentResponse.status === 'FAIL' || paymentResponse.status === 'FAILURE') {
         // Payment failed
