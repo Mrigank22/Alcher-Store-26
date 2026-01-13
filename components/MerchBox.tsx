@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
+import LoadingScreen from "./LoadingScreen";
 
 type MediaImage = {
   id: string;
@@ -46,35 +47,34 @@ export default function MerchBox({ showHeading = true }: MerchBoxProps) {
   }, []);
 
   if (loading) {
-    return (
-      <section className="px-20 py-24 text-center text-xl">
-        Loading merchandise...
-      </section>
-    );
+    return <LoadingScreen/>;
   }
 
   return (
-    <section className="bg-[#F0FAF0] px-20 py-24 font-gotham" >
-      {showHeading && (
-        <div className="text-center text-4xl font-extrabold tracking-wider mb-20 text-green-950 leading-[48px]">
-          MERCHANDISE
-        </div>
-      )}
-
-      <div
-        className="
-          grid
-          grid-cols-1
-          sm:grid-cols-2
-          lg:grid-cols-3
-          gap-10
-          justify-items-center
-        "
-      >
-        {products.slice(0, 3).map((product) => (
-          <ProductCard key={product.product_id} product={product} />
-        ))}
+  <section className="bg-[#F0FAF0] py-24 font-gotham">
+  <div className="max-w-[1200px] mx-auto px-6 sm:px-10 lg:px-20">
+    {showHeading && (
+      <div className="text-center text-4xl font-extrabold mb-20 text-green-950">
+        MERCHANDISE
       </div>
-    </section>
+    )}
+
+    <div
+      className="
+        grid
+        grid-cols-1
+        sm:grid-cols-2
+        lg:grid-cols-3
+        gap-10
+        justify-items-center
+      "
+    >
+      {products.slice(0, 3).map((product) => (
+        <ProductCard key={product.product_id} product={product} />
+      ))}
+    </div>
+  </div>
+</section>
+
   );
 }
