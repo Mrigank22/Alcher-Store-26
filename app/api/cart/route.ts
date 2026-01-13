@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Cart from "@/models/Cart";
 import Product from "@/models/Product";
+import Media from "@/models/Media";
 
 function recalcCart(cart: any) {
   cart.total_quantity = cart.items.reduce(
@@ -15,6 +16,60 @@ function recalcCart(cart: any) {
   );
 }
 
+async function enrichProductImages(product: any) {
+  if (!product?.images?.length) return;
+
+  const mediaDocs = await Media.find({
+    _id: { $in: product.images },
+  }).lean();
+
+  const mediaMap: Record<string, any> = {};
+  for (const m of mediaDocs) {
+    mediaMap[String(m._id)] = {
+      id: m._id,
+      url: `/media/${m.filename}`,
+      alt: m.alt || "",
+    };
+  }
+
+  product.images = product.images
+    .map((id: any) => mediaMap[String(id)])
+    .filter(Boolean);
+}
+
+
+// export async function GET(req: Request) {
+//   await connectDB();
+
+//   const { searchParams } = new URL(req.url);
+//   const email = searchParams.get("email");
+
+//   if (!email) {
+//     return NextResponse.json(
+//       { error: "Email required" },
+//       { status: 400 }
+//     );
+//   }
+
+//   const cart = await Cart.findOne({ user_email: email })
+//     .populate("items.product");
+
+//   // return NextResponse.json(cart || { items: [] });
+//    if (!cart) {
+//     return NextResponse.json({ items: [] });
+//   }
+
+//   cart.items = cart.items.filter(
+//     (item: any) => item.product !== null
+//   );
+//   for (const item of cart.items) {
+//   await enrichProductImages(item.product);
+// }
+//   recalcCart(cart);
+//   await cart.save();
+
+//   return NextResponse.json(cart);
+// }
 export async function GET(req: Request) {
   await connectDB();
 
@@ -22,28 +77,50 @@ export async function GET(req: Request) {
   const email = searchParams.get("email");
 
   if (!email) {
-    return NextResponse.json(
-      { error: "Email required" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Email required" }, { status: 400 });
   }
 
-  const cart = await Cart.findOne({ user_email: email })
-    .populate("items.product");
+  const cart:any = await Cart.findOne({ user_email: email })
+    .populate("items.product")
+    .lean();
 
-  // return NextResponse.json(cart || { items: [] });
-   if (!cart) {
+  if (!cart) {
     return NextResponse.json({ items: [] });
   }
 
-  cart.items = cart.items.filter(
-    (item: any) => item.product !== null
-  );
-  recalcCart(cart);
-  await cart.save();
+  // 🔹 Collect all media IDs from products
+  const mediaIds = new Set<string>();
+
+  for (const item of cart.items) {
+    const images = item.product?.images || [];
+    images.forEach((id: any) => mediaIds.add(String(id)));
+  }
+
+  // 🔹 Fetch media docs
+  const mediaDocs = await Media.find({
+    _id: { $in: Array.from(mediaIds) },
+  }).lean();
+
+  // 🔹 Build media map
+  const mediaMap: Record<string, any> = {};
+  for (const m of mediaDocs) {
+    mediaMap[String(m._id)] = {
+      id: m._id,
+      url: `/media/${m.filename}`,
+      alt: m.alt || "",
+    };
+  }
+
+  // 🔹 Replace image IDs with media objects
+  for (const item of cart.items) {
+    item.product.images = (item.product.images || [])
+      .map((id: any) => mediaMap[String(id)])
+      .filter(Boolean);
+  }
 
   return NextResponse.json(cart);
 }
+
 
 /* ADD TO CART  */
 export async function POST(req: Request) {

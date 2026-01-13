@@ -106,7 +106,12 @@ export async function POST(req: NextRequest) {
     const orderItems = cart.items.map((item: any) => ({
       product: item.product._id,
       productName: item.product.name,
-      productImage: item.product.imageUrl || item.product.img,
+      productImage:
+    item.product.images?.[
+      item.product.primaryImageIndex ?? 0
+    ] ||
+    item.product.images?.[0] ||
+    "/placeholder.png",
       quantity: item.quantity,
       size: item.size,
       colour: item.colour,
@@ -121,7 +126,7 @@ export async function POST(req: NextRequest) {
     );
     
     // You can add logic for shipping and tax calculation
-    const shippingCost = subtotal >= 500 ? 0 : 50; // Free shipping above ₹500
+    const shippingCost = 0; // Free shipping for all orders
     const tax = Math.round(subtotal * 0.18); // 18% GST
     const totalAmount = subtotal + shippingCost + tax;
 

@@ -12,6 +12,9 @@ import { Media } from './collections/Media'
 import { Products } from './collections/Products'
 import { Categories } from './collections/Categories'
 import { Orders } from './collections/Orders'
+import { Feedback } from './collections/Feedback'
+
+
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -28,7 +31,8 @@ export default buildConfig({
     Media,
     Products, 
     Categories,
-    Orders
+    Orders,
+    Feedback
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

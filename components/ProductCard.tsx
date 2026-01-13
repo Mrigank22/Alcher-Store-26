@@ -1,14 +1,37 @@
 import Image from "next/image";
 import Link from "next/link";
 
+// type Product = {
+//   product_id: string;
+//   name: string;
+//   price: number;
+//    images: string[];            
+//   primaryImageIndex?: number;  
+// };
+
+type MediaImage = {
+  id: string;
+  url: string;
+  alt?: string;
+};
+
 type Product = {
   product_id: string;
   name: string;
   price: number;
-  imageUrl: string;
+  images: MediaImage[]; // ✅ correct
+  primaryImageIndex?: number;
 };
 
 export default function ProductCard({ product }: { product: Product }) {
+
+  const imageSrc =
+  product.images?.[
+    product.primaryImageIndex ?? 0
+  ]?.url ||
+  product.images?.[0]?.url ||
+  "/placeholder.png";
+
   return (
     <div className="w-full max-w-[460px] font-gotham">
       {/* IMAGE + FRAME */}
@@ -31,6 +54,15 @@ export default function ProductCard({ product }: { product: Product }) {
             fill
             className="object-contain z-[1] p-4"
     /> */}
+    {/* PRODUCT IMAGE */}
+<Image
+  src={imageSrc}
+  alt={product.name}
+  fill
+  className="object-contain z-[1]"
+  sizes="(max-width: 768px) 100vw, 460px"
+/>
+
 
           {/* FRAME PNG */}
           <img

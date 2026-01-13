@@ -17,17 +17,37 @@ type Variant = {
   stock: number;
 };
 
+// interface Product {
+//   _id: string;
+//   product_id: string;
+//   name: string;
+//   images: string[];
+//   primaryImageIndex?:number;
+//   price: number;
+//   description?: string;
+//   hasSize: boolean;
+//   hasColor: boolean;
+//   variants: Variant[];
+// }
+type MediaImage = {
+  id: string;
+  url: string;
+  alt?: string;
+};
+
 interface Product {
   _id: string;
   product_id: string;
   name: string;
-  imageUrl: string;
+  images: MediaImage[];   // ✅ CORRECT
+  primaryImageIndex?: number;
   price: number;
   description?: string;
   hasSize: boolean;
   hasColor: boolean;
   variants: Variant[];
 }
+
 
 type Review = {
   _id: string;
@@ -54,6 +74,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
   const [buying, setBuying] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
 
   /* ================= FETCH PRODUCT ================= */
 
@@ -64,7 +85,7 @@ export default function ProductDetailPage() {
 
   async function fetchProduct() {
     try {
-      const res = await fetch(`/api/admin/product/${productId}`);
+      const res = await fetch(`/api/admin/product/${productId}?depth=1`);
       if (!res.ok) throw new Error("Product not found");
 
       const data: Product = await res.json();
@@ -83,6 +104,12 @@ export default function ProductDetailPage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+  if (product?.images?.length) {
+    setActiveImage(product.primaryImageIndex ?? 0);
+  }
+}, [product]);
 
   /* ================= FETCH REVIEWS ================= */
 
@@ -230,25 +257,61 @@ export default function ProductDetailPage() {
       <div className="relative flex flex-col items-center ">
         <div className="w-full max-w-md border-2 border-[#05360B] rounded-sm p-2">
           <img
-            src={p.imageUrl}
+            src={p.images[activeImage]?.url || 
+              p.images?.[0]?.url ||
+              "/placeholder.png"
+            }
             alt={p.name}
             className="w-full h-[380px] md:h-[550px] object-cover bg-gray-200 border-[1.5px] border-[#05360B]"
           />
         </div>
 
          <div className="flex justify-center gap-2 mt-3 lg:hidden">
-  <span className="w-2 h-2 rounded-full bg-[#021B05]" />
+  {/* <span className="w-2 h-2 rounded-full bg-[#021B05]" />
   <span className="w-2 h-2 rounded-full bg-[#A7C5AA]" />
   <span className="w-2 h-2 rounded-full bg-[#A7C5AA]" />
-  <span className="w-2 h-2 rounded-full bg-[#A7C5AA]" />
+  <span className="w-2 h-2 rounded-full bg-[#A7C5AA]" /> */}
+  {p.images.map((_, idx) => (
+    <button
+      key={idx}
+      onClick={() => setActiveImage(idx)}
+      className={`w-2 h-2 rounded-full transition ${
+        activeImage === idx ? "bg-[#021B05]" : "bg-[#A7C5AA]"
+      }`}
+    />
+  ))}
 </div>
 
-        <button className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 border-2 border-black px-2 py-8">
+        {/* <button className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 border-2 border-black px-2 py-8">
           <Image src="/left-arrow.png" alt="left-arrow" width={12} height={10}/>
-        </button>
-        <button className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 border-2 border-black px-2 py-8">
+        </button> */}
+
+        <button
+  onClick={() =>
+    setActiveImage((prev) =>
+      prev === 0 ? p.images.length - 1 : prev - 1
+    )
+  }
+  className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 border-2 border-black px-2 py-8"
+>
+  <Image src="/left-arrow.png" alt="left-arrow" width={12} height={10} />
+</button>
+
+        {/* <button className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 border-2 border-black px-2 py-8">
           <Image src="/right-arrow.png" alt="right-arrow" width={12} height={10}/>
-        </button>
+        </button> */}
+
+        <button
+  onClick={() =>
+    setActiveImage((prev) =>
+      prev === p.images.length - 1 ? 0 : prev + 1
+    )
+  }
+  className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 border-2 border-black px-2 py-8"
+>
+  <Image src="/right-arrow.png" alt="right-arrow" width={12} height={10} />
+</button>
+
       </div>
 
       {/* PRODUCT DETAILS */}
@@ -374,6 +437,88 @@ export default function ProductDetailPage() {
     </div>
   </div>
 
+ <section className="bg-[#F0FAF0] py-12">
+  <div className="max-w-7xl mx-auto px-4 md:px-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+     <div className="bg-[#021B05] text-[#F0FAF0] rounded-2xl p-6">
+   <div className="flex items-center gap-3 mb-4">
+    <img src="/calendar-pre-order.png" alt="" />
+    <h3 className="text-2xl font-medium">Pre-Order your merch</h3>
+  </div>
+
+  <p className="text-sm leading-relaxed opacity-90 mb-4">
+    We are currently accepting pre-orders. When you place your order in advance,
+    it helps us plan our production better. This allows us to prepare your product
+    with care and deliver it to you on time.
+  </p>
+
+  <ul className="text-sm leading-relaxed opacity-90 list-disc list-inside space-y-2">
+    <li>All pre-orders require full payment at the time of purchase</li>
+    <li>Your order will be confirmed and scheduled for dispatch on 24 January 2026</li>
+    <li>Pre-orders cannot be cancelled once placed</li>
+  </ul>
+</div>
+<div className="bg-[#021B05] text-[#F0FAF0] rounded-2xl p-6">
+   <div className="flex items-center gap-3 mb-4">
+    <img src="/hand-delivery-box.png" alt="" />
+    <h3 className="text-2xl font-medium">Return Policy</h3>
+  </div>
+
+  <ul className="text-sm leading-relaxed opacity-90 list-disc list-inside space-y-3">
+    <li>
+      We do not accept returns, as our products are not mass-produced and are made to order.
+    </li>
+    <li>
+      Refunds are only provided if the product delivered is damaged or incorrect,
+      and valid evidence is provided. Replacements are not offered.
+    </li>
+    <li>
+      Returns are not allowed for wrong size selection. Please check the size chart carefully.
+    </li>
+    <li>
+      Returns or refunds are not applicable for cases of dislike, design preference,
+      or unmet expectations.
+    </li>
+  </ul>
+</div>
+
+<div className="bg-[#021B05] text-[#F0FAF0] rounded-2xl p-6 md:p-8">
+  {/* Header */}
+  <div className="flex items-center gap-3 mb-4">
+    <img src="/costumer-service.png" alt="" />
+    <h3 className="text-2xl font-medium">Call & Email Support</h3>
+  </div>
+
+  {/* Description */}
+  <p className="text-sm leading-relaxed opacity-90 mb-6">
+    We’re happy to help you with any questions about your order or our products.
+    You can reach us through call or email, and we’ll do our best to respond as
+    soon as possible.
+  </p>
+
+  {/* Reach out */}
+  <p className="text-sm font-medium mb-3">Reach Out to Us :</p>
+
+  {/* Contact list */}
+  <ul className="text-sm space-y-4 opacity-90">
+    <li className="flex flex-col">
+      <span className="font-medium">Ayush Bahuguna</span>
+      <span className="block">+91 7060633995</span>
+      <span className="block">creatives@alcheringa.co.in</span>
+    </li>
+
+    <li className="flex flex-col">
+      <span className="font-medium">Ayush Bahuguna</span>
+      <span className="block">+91 7060633995</span>
+      <span className="block">creatives@alcheringa.co.in</span>
+    </li>
+  </ul>
+</div>
+
+    </div>
+  </div>
+</section>
+
   {/* something new part */}
 
   <JokerNew/>
@@ -384,7 +529,7 @@ export default function ProductDetailPage() {
     <h2 className="text-[24px] md:text-[48px] font-medium text-[#05360B] tracking-wide">
       CHECK OUT OUR OTHER PRODUCTS
     </h2>
-    <MerchBox/>
+    <MerchBox showHeading={false}/>
   </div>
 </section>
 

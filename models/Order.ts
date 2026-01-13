@@ -86,7 +86,12 @@ const OrderSchema = new Schema(
     // Order status
     status: {
       type: String,
-      enum: ["pending", "payment_failed", "confirmed", "processing", "shipped", "delivered", "cancelled"],
+      enum: ["pending", "payment_failed", "payment_error", "confirmed", "processing", "shipped", "delivered", "cancelled"],
+      default: "pending",
+    },
+    orderStatus: {
+      type: String,
+      enum: ["pending", "payment_failed", "payment_error", "confirmed", "processing", "shipped", "delivered", "cancelled"],
       default: "pending",
     },
 
@@ -98,9 +103,16 @@ const OrderSchema = new Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["razorpay", "mock", "cod"],
+      enum: ["razorpay", "sbi", "cod"],
       default: "razorpay",
     },
+    paymentGateway: {
+      type: String,
+      enum: ["Razorpay", "SBI", "COD"],
+      default: null,
+    },
+    
+    // Razorpay fields (for Razorpay payments)
     razorpayOrderId: {
       type: String, // Razorpay's order ID
       default: null,
@@ -111,6 +123,22 @@ const OrderSchema = new Schema(
     },
     razorpaySignature: {
       type: String, // Signature for verification
+      default: null,
+    },
+    
+    // SBI Payment Gateway fields (for SBI payments)
+    sbiTransactionId: {
+      type: String, // Our transaction ID sent to SBI
+      default: null,
+    },
+    paymentDetails: {
+      type: Schema.Types.Mixed, // Flexible field for gateway-specific data
+      default: null,
+      // For SBI: bankRefNo, transactionDate, challanNo, totalFee, gst, atrn
+      // For Razorpay: razorpay payment details
+    },
+    paidAt: {
+      type: Date,
       default: null,
     },
 

@@ -7,7 +7,7 @@ async function getProducts() {
   const h = await headers();
   const host = h.get("host");
 
-  const res = await fetch(`http://${host}/api/admin/product`, {
+  const res = await fetch(`http://${host}/api/admin/product?depth=1`, {
     cache: "no-store",
   });
 
@@ -31,7 +31,12 @@ export default async function ProductsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {products.map((p: any) => (
           <div key={p._id} className="border p-4 rounded">
-            <img src={p.img} className="h-40 w-full object-cover rounded" />
+            {/* <img src={p.img} className="h-40 w-full object-cover rounded" /> */}
+            <img
+  src={p.images?.[0]?.url || "/placeholder.png"}
+  alt={p.images?.[0]?.alt || p.name}
+  className="h-40 w-full object-cover rounded"
+/>
             <h2 className="font-semibold mt-2">{p.name}</h2>
             <p>₹{p.price}</p>
 
