@@ -53,10 +53,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Return the secure download URL instead of direct file path
+    const downloadUrl = `/api/invoice/download?orderId=${order.orderId}`;
+
     return NextResponse.json({
       success: true,
       data: {
-        invoiceUrl: order.invoiceUrl,
+        invoiceUrl: downloadUrl,
         invoiceNumber: order.invoiceNumber,
         orderId: order.orderId,
       },
