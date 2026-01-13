@@ -44,7 +44,7 @@ next-env.d.ts
 /docs/
 
 # invoices
-/public/invoices/
+/invoices/
 
 #Webstorm IDE
 /.idea

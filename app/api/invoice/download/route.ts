@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { connectDB } from "@/lib/mongodb";
 import Order from "@/models/Order";
+import fs from "fs";
+import path from "path";
 
 /**
- * GET /api/invoice/generate?orderId=xxx
- * Get invoice URL for an order
+ * GET /api/invoice/download?orderId=xxx
+ * Securely download invoice PDF
  */
 export async function GET(req: NextRequest) {
   try {
@@ -46,28 +48,38 @@ export async function GET(req: NextRequest) {
     }
 
     // Check if invoice exists
-    if (!order.invoiceUrl || !order.invoiceNumber) {
+    if (!order.invoiceUrl) {
       return NextResponse.json(
-        { success: false, message: "Invoice not generated yet. Invoice is generated after successful payment." },
+        { success: false, message: "Invoice not generated yet" },
         { status: 404 }
       );
     }
 
-    // Return the secure download URL instead of direct file path
-    const downloadUrl = `/api/invoice/download?orderId=${order.orderId}`;
+    // Get the invoice file path
+    const invoicePath = path.join(process.cwd(), "invoices", order.invoiceUrl);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        invoiceUrl: downloadUrl,
-        invoiceNumber: order.invoiceNumber,
-        orderId: order.orderId,
+    // Check if file exists
+    if (!fs.existsSync(invoicePath)) {
+      return NextResponse.json(
+        { success: false, message: "Invoice file not found" },
+        { status: 404 }
+      );
+    }
+
+    // Read the file
+    const fileBuffer = fs.readFileSync(invoicePath);
+
+    // Return the PDF file
+    return new NextResponse(fileBuffer, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="invoice-${orderId}.pdf"`,
       },
     });
   } catch (error) {
-    console.error("Error fetching invoice:", error);
+    console.error("Error downloading invoice:", error);
     return NextResponse.json(
-      { success: false, message: "Failed to fetch invoice" },
+      { success: false, message: "Failed to download invoice" },
       { status: 500 }
     );
   }
