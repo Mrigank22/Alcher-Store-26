@@ -61,7 +61,7 @@ export async function GET(
   for (const m of mediaDocs) {
     mediaMap[String(m._id)] = {
       id: m._id,
-      url: `/media/${m.filename}`, // ✅ THIS is why images now work
+      url: `/api/media/${m.filename}`, // ✅ THIS is why images now work
       alt: m.alt || "",
     };
   }
