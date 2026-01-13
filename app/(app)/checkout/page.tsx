@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -12,8 +12,8 @@ interface CartItem {
     _id: string;
     name: string;
     img?: string;
-     images: string[];              
-    primaryImageIndex?: number;    
+    images: string[];
+    primaryImageIndex?: number;
     price: number;
   };
   quantity: number;
@@ -32,12 +32,6 @@ interface ShippingAddress {
   pincode: string;
 }
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
-
 // Separate component that uses useSearchParams
 function CheckoutContent() {
   const { data: session, status } = useSession();
@@ -51,7 +45,6 @@ function CheckoutContent() {
   const [shippingCost, setShippingCost] = useState(0);
   const [tax, setTax] = useState(0);
   const [total, setTotal] = useState(0);
-  const [mockMode, setMockMode] = useState(false);
 
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     name: "",
@@ -81,8 +74,8 @@ function CheckoutContent() {
       const isDirectBuy = searchParams.get("type") === "direct";
 
       const endpoint = isDirectBuy
-          ? "/api/temp-order-cart"
-          : `/api/cart?email=${session.user.email}`;
+        ? "/api/temp-order-cart"
+        : `/api/cart?email=${session.user.email}`;
 
       const response = await fetch(endpoint);
       const result = await response.json();
@@ -103,10 +96,10 @@ function CheckoutContent() {
 
   const calculateTotals = (items: CartItem[]) => {
     const sub = items.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0
+      (sum, item) => sum + item.price * item.quantity,
+      0
     );
-    const shipping = sub >= 500 ? 0 : 50;
+    const shipping = 0; // Free shipping for all orders
     const taxAmount = Math.round(sub * 0.18);
     const totalAmount = sub + shipping + taxAmount;
 
@@ -125,12 +118,12 @@ function CheckoutContent() {
 
   const validateAddress = () => {
     if (
-        !shippingAddress.name ||
-        !shippingAddress.phone ||
-        !shippingAddress.addressLine1 ||
-        !shippingAddress.city ||
-        !shippingAddress.state ||
-        !shippingAddress.pincode
+      !shippingAddress.name ||
+      !shippingAddress.phone ||
+      !shippingAddress.addressLine1 ||
+      !shippingAddress.city ||
+      !shippingAddress.state ||
+      !shippingAddress.pincode
     ) {
       alert("Please fill all required fields");
       return false;
@@ -163,9 +156,9 @@ function CheckoutContent() {
         body: JSON.stringify({
           shippingAddress: {
             ...shippingAddress,
-            email: session.user.email
+            email: session.user.email,
           },
-          isDirect: isDirectBuy
+          isDirect: isDirectBuy,
         }),
       });
 
@@ -179,25 +172,8 @@ function CheckoutContent() {
 
       const { orderId } = orderResult.data;
 
-      const paymentResponse = await fetch("/api/payment/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId, mockMode }),
-      });
-
-      const paymentResult = await paymentResponse.json();
-
-      if (!paymentResult.success) {
-        alert(paymentResult.message || "Failed to initialize payment");
-        setProcessing(false);
-        return;
-      }
-
-      if (mockMode || paymentResult.mockMode) {
-        handleMockPayment(paymentResult.data, orderId);
-      } else {
-        handleRazorpayPayment(paymentResult.data, orderId);
-      }
+      // Handle SBI payment - redirect to alcheringa.iitg.ac.in/store
+      await handleSBIPayment(orderId);
     } catch (error) {
       console.error("Checkout error:", error);
       alert("An error occurred during checkout");
@@ -205,375 +181,328 @@ function CheckoutContent() {
     }
   };
 
-  const handleMockPayment = async (paymentData: any, orderId: string) => {
-    setTimeout(async () => {
-      try {
-        const verifyResponse = await fetch("/api/payment/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            razorpay_order_id: paymentData.orderId,
-            razorpay_payment_id: `mock_payment_${Date.now()}`,
-            razorpay_signature: "mock_signature",
-            mockMode: true,
-          }),
-        });
+  const handleSBIPayment = async (orderId: string) => {
+    try {
+      // Call backend to create SBI payment
+      const response = await fetch("/api/payment/sbi-create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId,
+          paymentMode: "UPI",
+        }),
+      });
 
-        const verifyResult = await verifyResponse.json();
+      const result = await response.json();
 
-        if (verifyResult.success) {
-          alert("✅ Mock Payment Successful!");
-          router.push(`/order/success?orderId=${verifyResult.data.orderId}`);
-        } else {
-          alert("Mock payment verification failed");
-          setProcessing(false);
-        }
-      } catch (error) {
-        console.error("Mock payment error:", error);
-        alert("Mock payment failed");
+      if (!result.success) {
+        alert(result.message || "Failed to create SBI payment");
         setProcessing(false);
+        return;
       }
-    }, 1500);
-  };
 
-  const handleRazorpayPayment = (paymentData: any, orderId: string) => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onerror = () => {
-      alert("Failed to load Razorpay. Check connection.");
+      // Redirect to alcheringa.iitg.ac.in/store with encrypted data
+      const cardsPortalUrl = new URL(result.data.cardsPortalUrl);
+      cardsPortalUrl.searchParams.set("EncryptTrans", result.data.EncryptTrans);
+      cardsPortalUrl.searchParams.set("merchIdVal", result.data.merchIdVal);
+      cardsPortalUrl.searchParams.set("sbiTransactionId", result.data.sbiTransactionId);
+      cardsPortalUrl.searchParams.set("orderNumber", result.data.orderNumber);
+      cardsPortalUrl.searchParams.set("amount", result.data.amount.toString());
+
+      console.log("Redirecting to:", cardsPortalUrl.toString());
+
+      // Redirect to cards_portal (alcheringa.iitg.ac.in/store)
+      window.location.href = cardsPortalUrl.toString();
+    } catch (error) {
+      console.error("SBI payment error:", error);
+      alert("Failed to initiate SBI payment");
       setProcessing(false);
-    };
-    script.onload = () => {
-      const options = {
-        key: paymentData.key,
-        amount: paymentData.amount,
-        currency: paymentData.currency,
-        name: "Alcheringa Store",
-        description: `Order ${paymentData.orderNumber}`,
-        order_id: paymentData.orderId,
-        handler: async (response: any) => {
-          try {
-            const verifyResponse = await fetch("/api/payment/verify", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
-            });
-
-            const verifyResult = await verifyResponse.json();
-
-            if (verifyResult.success) {
-              alert("✅ Payment Successful!");
-              router.push(`/order/success?orderId=${verifyResult.data.orderId}`);
-            } else {
-              alert("Payment verification failed.");
-              setProcessing(false);
-            }
-          } catch (error) {
-            console.error("Verification error:", error);
-            alert("Payment verification failed");
-            setProcessing(false);
-          }
-        },
-        prefill: {
-          name: shippingAddress.name,
-          contact: shippingAddress.phone,
-        },
-        theme: {
-          color: "#3399cc",
-        },
-        modal: {
-          ondismiss: () => {
-            alert("Payment cancelled");
-            setProcessing(false);
-          },
-        },
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-    };
-
-    document.body.appendChild(script);
+    }
   };
+
+
 
   if (loading) {
     return <LoadingScreen/>;
   }
 
   return (
-      <div className="min-h-screen bg-[#F0FAF0]">
-        {/* Navbar */}
-        <div className="fixed top-0 left-0 right-0 z-50">
-          <Navbar />
+    <div className="min-h-screen bg-[#F0FAF0]">
+      {/* Navbar */}
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Navbar />
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8 pt-24 max-w-6xl">
+        {/* Tabs */}
+        <div className="flex items-center gap-2 sm:gap-4 mb-6 sm:mb-8 overflow-x-auto">
+          <div className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base md:text-lg font-semibold whitespace-nowrap">
+            <span>Cart</span>
+            <span className="text-xl sm:text-2xl"></span>
+          </div>
+          <div className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base md:text-lg font-semibold text-gray-600 whitespace-nowrap">
+            <span>Delivery Address</span>
+            <span className="text-xl sm:text-2xl"></span>
+          </div>
         </div>
 
-        {/* Main Content */}
-        <div className="container mx-auto px-4 py-8 pt-24 max-w-6xl">
-          {/* Tabs */}
-          <div className="flex items-center gap-2 sm:gap-4 mb-6 sm:mb-8 overflow-x-auto">
-            <div className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base md:text-lg font-semibold whitespace-nowrap">
-              <span>Cart</span>
-              <span className="text-xl sm:text-2xl">💎</span>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base md:text-lg font-semibold text-gray-600 whitespace-nowrap">
-              <span>Delivery Address</span>
-              <span className="text-xl sm:text-2xl">❤️</span>
-            </div>
+        {cartItems.length === 0 ? (
+          <div className="text-center bg-white rounded-2xl p-8 shadow-lg">
+            <p className="text-gray-700 mb-4">Your cart is empty.</p>
+            <button
+              onClick={() => router.push("/")}
+              className="bg-[#2D5F2E] text-white px-6 py-2 rounded-lg hover:bg-[#234A24]"
+            >
+              Continue Shopping
+            </button>
           </div>
-
-          {cartItems.length === 0 ? (
-              <div className="text-center bg-white rounded-2xl p-8 shadow-lg">
-                <p className="text-gray-700 mb-4">Your cart is empty.</p>
-                <button
-                    onClick={() => router.push("/")}
-                    className="bg-[#2D5F2E] text-white px-6 py-2 rounded-lg hover:bg-[#234A24]"
-                >
-                  Continue Shopping
-                </button>
-              </div>
-          ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left: Shipping Form - Takes 2 columns */}
-                <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-lg">
-                  {/* Contact Information */}
-                  <div className="mb-6">
-                    <h2 className="text-base md:text-lg font-bold mb-4">Contact Information</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">First Name</label>
-                        <input
-                            type="text"
-                            name="name"
-                            placeholder=""
-                            value={shippingAddress.name.split(' ')[0] || shippingAddress.name}
-                            onChange={(e) => {
-                              const lastName = shippingAddress.name.split(' ').slice(1).join(' ');
-                              handleInputChange({
-                                ...e,
-                                target: { ...e.target, name: 'name', value: `${e.target.value} ${lastName}`.trim() }
-                              } as any);
-                            }}
-                            className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                            required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                        <input
-                            type="text"
-                            placeholder=""
-                            value={shippingAddress.name.split(' ').slice(1).join(' ')}
-                            onChange={(e) => {
-                              const firstName = shippingAddress.name.split(' ')[0] || '';
-                              handleInputChange({
-                                target: { name: 'name', value: `${firstName} ${e.target.value}`.trim() }
-                              } as any);
-                            }}
-                            className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="mt-4">
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                      <input
-                          type="tel"
-                          name="phone"
-                          placeholder=""
-                          value={shippingAddress.phone}
-                          onChange={handleInputChange}
-                          className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                          required
-                      />
-                    </div>
-                  </div>
-
-                  {/* Delivery Address */}
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left: Shipping Form - Takes 2 columns */}
+            <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-lg">
+              {/* Contact Information */}
+              <div className="mb-6">
+                <h2 className="text-base md:text-lg font-bold mb-4">Contact Information</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <h2 className="text-base md:text-lg font-bold mb-4">Delivery Address</h2>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Address Line 1</label>
-                        <input
-                            type="text"
-                            name="addressLine1"
-                            placeholder=""
-                            value={shippingAddress.addressLine1}
-                            onChange={handleInputChange}
-                            className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                            required
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Address Line 2</label>
-                        <input
-                            type="text"
-                            name="addressLine2"
-                            placeholder=""
-                            value={shippingAddress.addressLine2}
-                            onChange={handleInputChange}
-                            className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Country</label>
-                          <input
-                              type="text"
-                              placeholder="India"
-                              defaultValue="India"
-                              className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">State</label>
-                          <input
-                              type="text"
-                              name="state"
-                              placeholder=""
-                              value={shippingAddress.state}
-                              onChange={handleInputChange}
-                              className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                              required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">District</label>
-                          <input
-                              type="text"
-                              name="city"
-                              placeholder=""
-                              value={shippingAddress.city}
-                              onChange={handleInputChange}
-                              className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                              required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">City</label>
-                          <input
-                              type="text"
-                              name="city"
-                              placeholder=""
-                              value={shippingAddress.city}
-                              onChange={handleInputChange}
-                              className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                              required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Pincode</label>
-                          <input
-                              type="text"
-                              name="pincode"
-                              placeholder=""
-                              value={shippingAddress.pincode}
-                              onChange={handleInputChange}
-                              className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                              required
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Mock Payment Toggle */}
-                  <div className="mt-6 p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
-                    <label className="flex items-center space-x-2">
-                      <input
-                          type="checkbox"
-                          checked={mockMode}
-                          onChange={(e) => setMockMode(e.target.checked)}
-                          className="w-4 h-4"
-                      />
-                      <span className="text-sm font-medium">Enable Mock Payment (Testing)</span>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                      First Name
                     </label>
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder=""
+                      value={shippingAddress.name.split(" ")[0] || shippingAddress.name}
+                      onChange={(e) => {
+                        const lastName = shippingAddress.name.split(" ").slice(1).join(" ");
+                        handleInputChange({
+                          ...e,
+                          target: {
+                            ...e.target,
+                            name: "name",
+                            value: `${e.target.value} ${lastName}`.trim(),
+                          },
+                        } as any);
+                      }}
+                      className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder=""
+                      value={shippingAddress.name.split(" ").slice(1).join(" ")}
+                      onChange={(e) => {
+                        const firstName = shippingAddress.name.split(" ")[0] || "";
+                        handleInputChange({
+                          target: {
+                            name: "name",
+                            value: `${firstName} ${e.target.value}`.trim(),
+                          },
+                        } as any);
+                      }}
+                      className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
                   </div>
                 </div>
 
-                {/* Right: Order Summary - Takes 1 column */}
-                <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg h-fit">
-                  <h2 className="text-base md:text-lg font-bold mb-4">Order Summary</h2>
+                <div className="mt-4">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder=""
+                    value={shippingAddress.phone}
+                    onChange={handleInputChange}
+                    className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    required
+                  />
+                </div>
+              </div>
 
-                  <div className="space-y-4 mb-4">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Subtotal</span>
-                      <span className="font-medium">₹{subtotal.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Delivery Charges</span>
-                      <span className="font-medium">₹{shippingCost.toFixed(2)}</span>
-                    </div>
-                    <div className="border-t pt-4"></div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Subtotal</span>
-                      <span className="font-medium">₹{subtotal.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Delivery Charges</span>
-                      <span className="font-medium">₹{shippingCost.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">GST</span>
-                      <span className="font-medium">₹{tax.toFixed(2)}</span>
-                    </div>
-                    <div className="border-t pt-4 flex justify-between text-lg font-bold">
-                      <span>Total</span>
-                      <span className="text-[#2D5F2E]">₹{total.toFixed(2)}</span>
-                    </div>
+              {/* Delivery Address */}
+              <div>
+                <h2 className="text-base md:text-lg font-bold mb-4">Delivery Address</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                      Address Line 1
+                    </label>
+                    <input
+                      type="text"
+                      name="addressLine1"
+                      placeholder=""
+                      value={shippingAddress.addressLine1}
+                      onChange={handleInputChange}
+                      className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      required
+                    />
                   </div>
 
-                  {/* Coupon Section */}
-                  <div className="mb-4">
-                    <h3 className="text-xs sm:text-sm font-bold mb-2">Coupon</h3>
-                    <div className="flex flex-col sm:flex-row gap-2">
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                      Address Line 2
+                    </label>
+                    <input
+                      type="text"
+                      name="addressLine2"
+                      placeholder=""
+                      value={shippingAddress.addressLine2}
+                      onChange={handleInputChange}
+                      className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                        Country
+                      </label>
                       <input
-                          type="text"
-                          placeholder="Enter Code"
-                          className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                        type="text"
+                        placeholder="India"
+                        defaultValue="India"
+                        className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                       />
-                      <button className="bg-[#2D5F2E] text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-[#234A24] w-full sm:w-auto">
-                        Submit
-                      </button>
+                    </div>
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                        State
+                      </label>
+                      <input
+                        type="text"
+                        name="state"
+                        placeholder=""
+                        value={shippingAddress.state}
+                        onChange={handleInputChange}
+                        className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                        District
+                      </label>
+                      <input
+                        type="text"
+                        name="city"
+                        placeholder=""
+                        value={shippingAddress.city}
+                        onChange={handleInputChange}
+                        className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        required
+                      />
                     </div>
                   </div>
 
-                  {/* Proceed Button */}
-                  <button
-                      onClick={handleCheckout}
-                      disabled={processing}
-                      className="w-full bg-[#2D5F2E] text-white py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-semibold hover:bg-[#234A24] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {processing ? "Processing..." : "Next"}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                        City
+                      </label>
+                      <input
+                        type="text"
+                        name="city"
+                        placeholder=""
+                        value={shippingAddress.city}
+                        onChange={handleInputChange}
+                        className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                        Pincode
+                      </label>
+                      <input
+                        type="text"
+                        name="pincode"
+                        placeholder=""
+                        value={shippingAddress.pincode}
+                        onChange={handleInputChange}
+                        className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Order Summary - Takes 1 column */}
+            <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg h-fit">
+              <h2 className="text-base md:text-lg font-bold mb-4">Order Summary</h2>
+
+              <div className="space-y-4 mb-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Subtotal</span>
+                  <span className="font-medium">₹{subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Delivery Charges</span>
+                  <span className="font-medium">₹{shippingCost.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">GST (18%)</span>
+                  <span className="font-medium">₹{tax.toFixed(2)}</span>
+                </div>
+                <div className="border-t pt-4 flex justify-between text-lg font-bold">
+                  <span>Total</span>
+                  <span className="text-[#2D5F2E]">₹{total.toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Coupon Section */}
+              <div className="mb-4">
+                <h3 className="text-xs sm:text-sm font-bold mb-2">Coupon</h3>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    placeholder="Enter Code"
+                    className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                  <button className="bg-[#2D5F2E] text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-[#234A24] w-full sm:w-auto">
+                    Submit
                   </button>
                 </div>
               </div>
-          )}
-        </div>
+
+              {/* Proceed Button */}
+              <button
+                onClick={handleCheckout}
+                disabled={processing}
+                className="w-full bg-[#2D5F2E] text-white py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-semibold hover:bg-[#234A24] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              >
+                {processing ? "Processing..." : "Proceed to Payment"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+    </div>
   );
 }
 
 // Main page component with Suspense wrapper
 export default function CheckoutPage() {
   return (
-      <Suspense fallback={
+    <Suspense
+      fallback={
         <div className="flex justify-center items-center min-h-screen bg-[#F0FAF0]">
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <p className="text-gray-700 text-lg">Loading checkout...</p>
           </div>
         </div>
-      }>
-        <CheckoutContent />
-      </Suspense>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
   );
 }
