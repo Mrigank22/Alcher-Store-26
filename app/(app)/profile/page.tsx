@@ -188,7 +188,10 @@ export default function ProfilePage() {
                       width={96}
                       height={96}
                       className="w-full h-full object-cover"
-                      unoptimized={userImage.includes('googleusercontent.com')}
+                      unoptimized
+                      onError={(e) => {
+                        console.error('[Profile] Image failed to load:', userImage);
+                      }}
                     />
                   ) : (
                     <svg
