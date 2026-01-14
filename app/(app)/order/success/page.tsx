@@ -17,21 +17,30 @@ function OrderSuccessContent() {
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
 
   useEffect(() => {
+    console.log('[Order Success] Page loaded with orderId:', orderId);
     if (orderId) {
       fetchOrderDetails();
+    } else {
+      console.warn('[Order Success] No orderId provided in URL');
+      setLoading(false);
     }
   }, [orderId]);
 
   const fetchOrderDetails = async () => {
     try {
+      console.log('[Order Success] Fetching order details for:', orderId);
       const response = await fetch(`/api/order/create?orderId=${orderId}`);
       const result = await response.json();
 
+      console.log('[Order Success] API response:', result);
+      
       if (result.success) {
         setOrderDetails(result.data);
+      } else {
+        console.error('[Order Success] Failed to fetch order:', result.message);
       }
     } catch (error) {
-      console.error("Error fetching order:", error);
+      console.error("[Order Success] Error fetching order:", error);
     } finally {
       setLoading(false);
     }

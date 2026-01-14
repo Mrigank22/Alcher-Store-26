@@ -22,27 +22,12 @@ const PaymentSchema = new Schema(
     // Payment gateway details
     gateway: {
       type: String,
-      enum: ["razorpay", "sbi"],
+      enum: ["sbi"],
       required: true,
     },
 
     // Generic transaction ID (works for all gateways)
     transactionId: {
-      type: String,
-      default: null,
-    },
-
-    // Razorpay specific fields (kept for backward compatibility, optional)
-    razorpayOrderId: {
-      type: String,
-      required: false,
-      default: null,
-    },
-    razorpayPaymentId: {
-      type: String,
-      default: null,
-    },
-    razorpaySignature: {
       type: String,
       default: null,
     },

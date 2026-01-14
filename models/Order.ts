@@ -103,39 +103,24 @@ const OrderSchema = new Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["razorpay", "sbi", "cod"],
-      default: "razorpay",
+      enum: ["sbi", "cod"],
+      default: "sbi",
     },
     paymentGateway: {
       type: String,
-      enum: ["Razorpay", "SBI", "COD"],
+      enum: ["SBI", "COD"],
       default: null,
     },
     
-    // Razorpay fields (for Razorpay payments)
-    razorpayOrderId: {
-      type: String, // Razorpay's order ID
-      default: null,
-    },
-    razorpayPaymentId: {
-      type: String, // Payment ID after successful payment
-      default: null,
-    },
-    razorpaySignature: {
-      type: String, // Signature for verification
-      default: null,
-    },
-    
-    // SBI Payment Gateway fields (for SBI payments)
+    // SBI Payment Gateway fields
     sbiTransactionId: {
       type: String, // Our transaction ID sent to SBI
       default: null,
     },
     paymentDetails: {
-      type: Schema.Types.Mixed, // Flexible field for gateway-specific data
+      type: Schema.Types.Mixed, // Flexible field for SBI gateway data
       default: null,
       // For SBI: bankRefNo, transactionDate, challanNo, totalFee, gst, atrn
-      // For Razorpay: razorpay payment details
     },
     paidAt: {
       type: Date,

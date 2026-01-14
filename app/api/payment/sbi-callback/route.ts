@@ -171,13 +171,24 @@ export async function POST(req: NextRequest) {
           order.invoiceNumber = `INV-${dateStr}-${random}`;
         }
 
+        // Log order details before invoice generation
+        console.log('[SBI Callback] Order details for invoice:', {
+          orderId: order.orderId,
+          itemsCount: order.items?.length || 0,
+          totalAmount: order.totalAmount,
+          hasShippingAddress: !!order.shippingAddress,
+          invoiceNumber: order.invoiceNumber
+        });
+
         // Generate and save invoice PDF
         try {
+          console.log('[SBI Callback] Starting invoice generation...');
           const invoiceFilename = await generateInvoicePDF(order);
           order.invoiceUrl = invoiceFilename;
-          console.log('[SBI Callback] Invoice generated:', invoiceFilename);
+          console.log('[SBI Callback] Invoice generated successfully:', invoiceFilename);
         } catch (invoiceError) {
           console.error('[SBI Callback] Error generating invoice:', invoiceError);
+          console.error('[SBI Callback] Invoice error stack:', invoiceError instanceof Error ? invoiceError.stack : 'No stack trace');
           // Don't fail the payment if invoice generation fails
         }
 
