@@ -66,14 +66,25 @@ export default function ProfilePage() {
 
   const fetchUserData = async () => {
     try {
+      console.log('[Profile] Fetching user data, session:', session?.user);
       const response = await fetch("/api/auth/user");
       const result = await response.json();
+      console.log('[Profile] User data response:', result);
+      
       if (result.success && result.user) {
         setUserPhone(result.user.phone || null);
-        setUserImage(result.user.image || null);
+        // Use user image from DB, fallback to session image (for Google OAuth)
+        const imageUrl = result.user.image || session?.user?.image || null;
+        console.log('[Profile] Setting user image:', imageUrl);
+        setUserImage(imageUrl);
       }
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      console.error("[Profile] Error fetching user data:", error);
+      // If API fails, try to use session image
+      if (session?.user?.image) {
+        console.log('[Profile] Using session image as fallback:', session.user.image);
+        setUserImage(session.user.image);
+      }
     }
   };
 
@@ -82,11 +93,14 @@ export default function ProfilePage() {
       const response = await fetch("/api/orders");
       const result = await response.json();
 
+      console.log('[Profile] Orders fetched:', result);
+
       if (result.success) {
+        console.log('[Profile] First order items:', result.data[0]?.items);
         setOrders(result.data);
       }
     } catch (error) {
-      console.error("Error fetching orders:", error);
+      console.error("[Profile] Error fetching orders:", error);
     } finally {
       setLoading(false);
     }
@@ -174,6 +188,7 @@ export default function ProfilePage() {
                       width={96}
                       height={96}
                       className="w-full h-full object-cover"
+                      unoptimized={userImage.includes('googleusercontent.com')}
                     />
                   ) : (
                     <svg
