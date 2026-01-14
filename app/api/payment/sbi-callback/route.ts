@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
         // Send order confirmation email
         try {
           await sendOrderConfirmationEmail(order);
-          console.log('[SBI Callback] Order confirmation email sent to:', shippingAddress.email);
+          console.log('[SBI Callback] Order confirmation email sent to:', order.shippingAddress.email);
         } catch (emailError) {
           console.error('[SBI Callback] Error sending confirmation email:', emailError);
           // Don't fail the payment if email sending fails
