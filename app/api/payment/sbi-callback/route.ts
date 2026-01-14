@@ -4,6 +4,7 @@ import Order from "@/models/Order";
 import Payment from "@/models/Payment";
 import { validateSBICallback, SBI_CONFIG, SBIPaymentResponse } from "@/lib/sbi-payment";
 import { generateInvoicePDF } from "@/lib/generateInvoicePDF";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 
 /**
  * POST /api/payment/sbi-callback
@@ -179,6 +180,18 @@ export async function POST(req: NextRequest) {
           console.error('[SBI Callback] Error generating invoice:', invoiceError);
           // Don't fail the payment if invoice generation fails
         }
+
+        // Save order with invoice before sending email
+        await order.save();
+
+        // Send order confirmation email
+        try {
+          await sendOrderConfirmationEmail(order);
+          console.log('[SBI Callback] Order confirmation email sent to:', shippingAddress.email);
+        } catch (emailError) {
+          console.error('[SBI Callback] Error sending confirmation email:', emailError);
+          // Don't fail the payment if email sending fails
+        }
         
       } else if (paymentResponse.status === 'FAIL' || paymentResponse.status === 'FAILURE') {
         // Payment failed
@@ -203,11 +216,10 @@ export async function POST(req: NextRequest) {
         console.log('[SBI Callback] Payment PENDING - Order status:', paymentResponse.status);
       }
 
-      await order.save();
-
-      // TODO: Send email notification to user
-      // TODO: Trigger webhook for order confirmation
-      // TODO: Update inventory if applicable
+      // Save order if not already saved (for non-success cases)
+      if (paymentResponse.status !== 'SUCCESS') {
+        await order.save();
+      }
 
       // Redirect user to appropriate page
       const redirectStatus = paymentResponse.status === 'SUCCESS' ? 'success' : 'failure';

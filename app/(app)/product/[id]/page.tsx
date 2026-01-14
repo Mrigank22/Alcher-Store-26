@@ -76,6 +76,10 @@ export default function ProductDetailPage() {
   const [adding, setAdding] = useState(false);
   const [buying, setBuying] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  
+  // Touch swipe state
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
 
   /* ================= FETCH PRODUCT ================= */
 
@@ -111,6 +115,40 @@ export default function ProductDetailPage() {
     setActiveImage(product.primaryImageIndex ?? 0);
   }
 }, [product]);
+
+  /* ================= TOUCH SWIPE HANDLERS ================= */
+  
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const minSwipeDistance = 50;
+    
+    if (Math.abs(distance) < minSwipeDistance) return;
+    
+    if (distance > 0) {
+      // Swipe left - next image
+      setActiveImage((prev) => 
+        prev === (product?.images.length || 1) - 1 ? 0 : prev + 1
+      );
+    } else {
+      // Swipe right - previous image
+      setActiveImage((prev) => 
+        prev === 0 ? (product?.images.length || 1) - 1 : prev - 1
+      );
+    }
+    
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
 
   /* ================= FETCH REVIEWS ================= */
 
@@ -252,7 +290,12 @@ export default function ProductDetailPage() {
 
       {/* IMAGE SECTION */}
       <div className="relative flex flex-col items-center ">
-        <div className="w-full max-w-md border-2 border-[#05360B] rounded-sm p-2">
+        <div 
+          className="w-full max-w-md border-2 border-[#05360B] rounded-sm p-2"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <img
             src={p.images[activeImage]?.url || 
               p.images?.[0]?.url ||

@@ -103,21 +103,35 @@ export async function POST(req: NextRequest) {
     }
 
     // Prepare order items with snapshot of product data
-    const orderItems = cart.items.map((item: any) => ({
-      product: item.product._id,
-      productName: item.product.name,
-      productImage:
-    item.product.images?.[
-      item.product.primaryImageIndex ?? 0
-    ] ||
-    item.product.images?.[0] ||
-    "/placeholder.png",
-      quantity: item.quantity,
-      size: item.size,
-      colour: item.colour,
-      price: item.price,
-      subtotal: item.price * item.quantity,
-    }));
+    const orderItems = cart.items.map((item: any) => {
+      // Extract image URL - handle both string and object formats
+      let imageUrl = "/placeholder.png";
+      
+      if (item.product.images && item.product.images.length > 0) {
+        const imageIndex = item.product.primaryImageIndex ?? 0;
+        const imageData = item.product.images[imageIndex] || item.product.images[0];
+        
+        // If image is an object with url property, extract it
+        if (typeof imageData === 'object' && imageData.url) {
+          imageUrl = imageData.url;
+        } 
+        // If image is already a string URL
+        else if (typeof imageData === 'string') {
+          imageUrl = imageData;
+        }
+      }
+      
+      return {
+        product: item.product._id,
+        productName: item.product.name,
+        productImage: imageUrl,
+        quantity: item.quantity,
+        size: item.size,
+        colour: item.colour,
+        price: item.price,
+        subtotal: item.price * item.quantity,
+      };
+    });
 
     // Calculate totals
     const subtotal = orderItems.reduce(
