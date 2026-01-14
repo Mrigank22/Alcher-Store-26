@@ -5,18 +5,27 @@ import path from "path";
 export async function generateInvoicePDF(order: any): Promise<string> {
   return new Promise((resolve, reject) => {
     try {
+      console.log('[Invoice Generation] Starting PDF generation for order:', order.orderId);
+      
       // Create invoices directory outside public folder
       const invoicesDir = path.join(process.cwd(), "invoices");
       if (!fs.existsSync(invoicesDir)) {
         fs.mkdirSync(invoicesDir, { recursive: true });
+        console.log('[Invoice Generation] Created invoices directory:', invoicesDir);
       }
 
       // Generate PDF filename
       const pdfFileName = `invoice-${order.orderId}-${Date.now()}.pdf`;
       const pdfPath = path.join(invoicesDir, pdfFileName);
+      console.log('[Invoice Generation] PDF will be saved to:', pdfPath);
 
-      // Create PDF document
-      const doc = new PDFDocument({ margin: 50, size: "A4" });
+      // Create PDF document with bufferPages to avoid font loading issues
+      const doc = new PDFDocument({ 
+        margin: 50, 
+        size: "A4",
+        bufferPages: true,
+        autoFirstPage: true
+      });
       const stream = fs.createWriteStream(pdfPath);
 
       doc.pipe(stream);
@@ -27,13 +36,16 @@ export async function generateInvoicePDF(order: any): Promise<string> {
       doc.end();
 
       stream.on("finish", () => {
+        console.log('[Invoice Generation] PDF generated successfully:', pdfFileName);
         resolve(pdfFileName);
       });
 
       stream.on("error", (err) => {
+        console.error('[Invoice Generation] Stream error:', err);
         reject(err);
       });
     } catch (error) {
+      console.error('[Invoice Generation] Fatal error:', error);
       reject(error);
     }
   });
@@ -52,6 +64,9 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
     return `₹${amount.toFixed(2)}`;
   };
 
+  // Don't set any font - PDFKit will use default embedded font
+  // This avoids font file loading issues in production
+  
   // Header
   doc
     .fontSize(28)
