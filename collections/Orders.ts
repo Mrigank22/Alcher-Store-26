@@ -82,25 +82,13 @@ export const Orders: CollectionConfig = {
     {
       name: 'paymentMethod',
       type: 'select',
-      options: ['razorpay', 'sbi', 'cod'],
-      defaultValue: 'razorpay',
+      options: ['sbi', 'cod'],
+      defaultValue: 'sbi',
     },
     {
       name: 'paymentGateway',
       type: 'select',
-      options: ['Razorpay', 'SBI', 'COD'],
-    },
-    {
-      name: 'razorpayOrderId',
-      type: 'text',
-    },
-    {
-      name: 'razorpayPaymentId',
-      type: 'text',
-    },
-    {
-      name: 'razorpaySignature',
-      type: 'text',
+      options: ['SBI', 'COD'],
     },
     {
       name: 'sbiTransactionId',
