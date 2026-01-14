@@ -6,6 +6,7 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
+import OrderFeedback from "@/components/reviews/OrderFeedback";
 
 interface Order {
   _id: string;
