@@ -64,13 +64,8 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
     return `₹${amount.toFixed(2)}`;
   };
 
-  // Try to use Helvetica, fallback to default if it fails
-  try {
-    doc.font('Helvetica');
-  } catch (error) {
-    console.log('[Invoice] Using default font, Helvetica not available');
-    // Continue with default font
-  }
+  // Don't set any font - PDFKit will use default embedded font
+  // This avoids font file loading issues in production
   
   // Header
   doc
