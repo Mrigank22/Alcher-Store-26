@@ -6,12 +6,30 @@ export async function generateInvoicePDF(order: any): Promise<string> {
   return new Promise((resolve, reject) => {
     try {
       console.log('[Invoice Generation] Starting PDF generation for order:', order.orderId);
+      console.log('[Invoice Generation] Process CWD:', process.cwd());
+      console.log('[Invoice Generation] Process user:', process.env.USER || process.env.USERNAME || 'unknown');
       
       // Create invoices directory outside public folder
       const invoicesDir = path.join(process.cwd(), "invoices");
-      if (!fs.existsSync(invoicesDir)) {
-        fs.mkdirSync(invoicesDir, { recursive: true });
-        console.log('[Invoice Generation] Created invoices directory:', invoicesDir);
+      console.log('[Invoice Generation] Target directory:', invoicesDir);
+      
+      try {
+        if (!fs.existsSync(invoicesDir)) {
+          fs.mkdirSync(invoicesDir, { recursive: true });
+          console.log('[Invoice Generation] Created invoices directory');
+        } else {
+          console.log('[Invoice Generation] Directory already exists');
+        }
+        
+        // Test write permissions
+        const testFile = path.join(invoicesDir, '.test-write');
+        fs.writeFileSync(testFile, 'test');
+        fs.unlinkSync(testFile);
+        console.log('[Invoice Generation] Directory is writable');
+      } catch (dirError) {
+        console.error('[Invoice Generation] Directory/permission error:', dirError);
+        reject(new Error(`Cannot access invoices directory: ${dirError}`));
+        return;
       }
 
       // Generate PDF filename
