@@ -37,17 +37,14 @@ export async function generateInvoicePDF(order: any): Promise<string> {
       const pdfPath = path.join(invoicesDir, pdfFileName);
       console.log('[Invoice Generation] PDF will be saved to:', pdfPath);
 
-      // Create PDF document WITHOUT auto-first-page to prevent Helvetica loading
+      // Create PDF document with standard embedded fonts (no external .afm files needed)
+      // Use 'Courier' as the base font - it's a standard PDF font embedded in PDFKit
       const doc = new PDFDocument({ 
         margin: 50, 
         size: "A4",
         bufferPages: true,
-        autoFirstPage: false  // Don't create page yet - prevents font loading
+        font: 'Courier'  // Set default font in constructor to prevent Helvetica loading
       });
-      
-      // Set font BEFORE adding first page to avoid Helvetica.afm
-      doc.font('Courier');
-      doc.addPage();  // Now add the page with Courier already set
       
       const stream = fs.createWriteStream(pdfPath);
 
@@ -84,7 +81,7 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
   };
 
   const formatCurrency = (amount: number) => {
-    return `₹${amount.toFixed(2)}`;
+    return `Rs. ${amount.toFixed(2)}`;
   };
 
   // Don't set any font - PDFKit will use default embedded font
@@ -159,7 +156,12 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
   let yPosition = tableTop + 30;
   doc.fillColor("#333").fontSize(10);
 
-  order.items.forEach((item: any) => {
+  if (!order.items || order.items.length === 0) {
+    doc.text("No items in order", 60, yPosition, { width: 485, align: "center" });
+    yPosition += 25;
+  }
+
+  (order.items || []).forEach((item: any) => {
     doc
       .text(item.product?.name || "Product", 60, yPosition, { width: 200 })
       .text(item.size || "-", 270, yPosition, { width: 50 })
