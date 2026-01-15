@@ -37,17 +37,17 @@ export async function generateInvoicePDF(order: any): Promise<string> {
       const pdfPath = path.join(invoicesDir, pdfFileName);
       console.log('[Invoice Generation] PDF will be saved to:', pdfPath);
 
-      // Create PDF document - use Courier to avoid Helvetica.afm font loading issues
-      // Courier is built into PDF spec and doesn't require external font files
+      // Create PDF document WITHOUT auto-first-page to prevent Helvetica loading
       const doc = new PDFDocument({ 
         margin: 50, 
         size: "A4",
         bufferPages: true,
-        autoFirstPage: true
+        autoFirstPage: false  // Don't create page yet - prevents font loading
       });
       
-      // Override default font to prevent Helvetica.afm loading
+      // Set font BEFORE adding first page to avoid Helvetica.afm
       doc.font('Courier');
+      doc.addPage();  // Now add the page with Courier already set
       
       const stream = fs.createWriteStream(pdfPath);
 
