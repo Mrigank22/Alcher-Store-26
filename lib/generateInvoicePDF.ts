@@ -37,13 +37,18 @@ export async function generateInvoicePDF(order: any): Promise<string> {
       const pdfPath = path.join(invoicesDir, pdfFileName);
       console.log('[Invoice Generation] PDF will be saved to:', pdfPath);
 
-      // Create PDF document with bufferPages to avoid font loading issues
+      // Create PDF document - use Courier to avoid Helvetica.afm font loading issues
+      // Courier is built into PDF spec and doesn't require external font files
       const doc = new PDFDocument({ 
         margin: 50, 
         size: "A4",
         bufferPages: true,
         autoFirstPage: true
       });
+      
+      // Override default font to prevent Helvetica.afm loading
+      doc.font('Courier');
+      
       const stream = fs.createWriteStream(pdfPath);
 
       doc.pipe(stream);
