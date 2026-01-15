@@ -13,12 +13,12 @@ export default function Footer() {
         font-sans relative z-50
       "
     >
-      <div className="max-w-[1920px] mx-auto flex flex-col">
+      <div className="max-w-[1920px] mx-auto flex flex-col max-md:justify-center max-md:items-center">
 
         {/* ================= TOP SECTION ================= */}
         <div
           className="
-            flex flex-col lg:flex-row
+            flex flex-col max-md:justify-center max-md:items-center lg:flex-row
             justify-between items-start
             gap-10 md:gap-12 lg:gap-8
             mb-10 md:mb-12
@@ -26,16 +26,16 @@ export default function Footer() {
         >
 
           {/* ===== LEFT: LOGO + BUSINESS QUERIES ===== */}
-          <div className="flex flex-col gap-8 max-w-[260px]">
+          <div className="flex flex-col max-md:justify-center max-md:items-center gap-8 max-w-[260px]">
 
             {/* Logo Block */}
-            <div className="flex items-start gap-4">
+            <div className="flex items-start gap-4 max-md:scale-150">
               <div className="relative w-10 h-14 sm:w-12 sm:h-16 shrink-0 mt-1">
                 <Image
                   src="/footer-icon.svg"
                   alt="Alcheringa Icon"
                   fill
-                  className="object-contain object-top"
+                  className="object-contain object-top "
                 />
               </div>
 
@@ -85,7 +85,7 @@ export default function Footer() {
 
             <div
               className="
-                grid grid-cols-1 sm:grid-cols-2
+                grid grid-cols-1 sm:grid-cols-2  max-md:grid-cols-2
                 gap-8 sm:gap-16 lg:gap-24
               "
             >
@@ -150,10 +150,10 @@ export default function Footer() {
         {/* ================= BOTTOM CREDITS ================= */}
         <div
           className="
-            flex flex-col md:flex-row
+            flex flex-col max-md:flex-row
             justify-between items-center
-            gap-1
-            text-[10px]
+            gap-1 max-md:gap-x-[15vw]
+            text-[10px] max-md:text-[2vw]
             uppercase tracking-[0.1em]
             opacity-60 font-medium
             text-center md:text-left

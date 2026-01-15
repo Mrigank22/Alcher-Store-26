@@ -5,6 +5,7 @@ import Order from "@/models/Order";
 import Cart from "@/models/Cart";
 import TempCart from "@/models/TempCart";
 import Product from "@/models/Product";
+import Media from "@/models/Media";
 
 /**
  * POST /api/order/create
@@ -103,21 +104,37 @@ export async function POST(req: NextRequest) {
     }
 
     // Prepare order items with snapshot of product data
+    // Collect all media IDs to fetch URLs
+    const mediaIds = new Set<string>();
+    for (const item of cart.items) {
+      const images = item.product?.images || [];
+      images.forEach((id: any) => mediaIds.add(String(id)));
+    }
+
+    // Fetch media documents with URLs
+    const mediaDocs = await Media.find({
+      _id: { $in: Array.from(mediaIds) },
+    }).lean();
+
+    const mediaMap: Record<string, string> = {};
+    for (const m of mediaDocs) {
+      mediaMap[String(m._id)] = `/api/media/${m.filename}`;
+    }
+
     const orderItems = cart.items.map((item: any) => {
-      // Extract image URL - handle both string and object formats
+      // Extract image URL using the mediaMap
       let imageUrl = "/placeholder.png";
       
       if (item.product.images && item.product.images.length > 0) {
         const imageIndex = item.product.primaryImageIndex ?? 0;
-        const imageData = item.product.images[imageIndex] || item.product.images[0];
+        const imageId = item.product.images[imageIndex] || item.product.images[0];
         
-        // If image is an object with url property, extract it
-        if (typeof imageData === 'object' && imageData.url) {
-          imageUrl = imageData.url;
-        } 
-        // If image is already a string URL
-        else if (typeof imageData === 'string') {
-          imageUrl = imageData;
+        // Look up the URL from the media map
+        if (mediaMap[String(imageId)]) {
+          imageUrl = mediaMap[String(imageId)];
+        } else if (typeof imageId === 'string' && imageId.startsWith('http')) {
+          // If it's already a URL, use it
+          imageUrl = imageId;
         }
       }
       
@@ -216,7 +233,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Find order by orderId string (e.g., "ORD-20251229-55020")
-    const order = await Order.findOne({ orderId }).populate("items.product");
+    const order = await Order.findOne({ orderId }).populate("items.product").lean();
 
     if (!order) {
       return NextResponse.json(
@@ -231,6 +248,33 @@ export async function GET(req: NextRequest) {
         { success: false, message: "Unauthorized access to order" },
         { status: 403 }
       );
+    }
+
+    // Enrich product images if they're still ObjectIds
+    const mediaIds = new Set<string>();
+    for (const item of order.items) {
+      // Check if productImage is an ObjectId (24 character hex string)
+      if (item.productImage && /^[0-9a-fA-F]{24}$/.test(item.productImage)) {
+        mediaIds.add(item.productImage);
+      }
+    }
+
+    if (mediaIds.size > 0) {
+      const mediaDocs = await Media.find({
+        _id: { $in: Array.from(mediaIds) },
+      }).lean();
+
+      const mediaMap: Record<string, string> = {};
+      for (const m of mediaDocs) {
+        mediaMap[String(m._id)] = `/api/media/${m.filename}`;
+      }
+
+      // Replace ObjectIds with URLs
+      for (const item of order.items) {
+        if (item.productImage && mediaMap[item.productImage]) {
+          item.productImage = mediaMap[item.productImage];
+        }
+      }
     }
 
     return NextResponse.json({
