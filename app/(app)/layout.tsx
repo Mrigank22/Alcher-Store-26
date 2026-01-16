@@ -26,6 +26,9 @@ const bahianita = Bahianita({
 export const metadata: Metadata = {
   title: "Alcher Store 2026",
   description: "Official Alcheringa Merchandise",
+  icons: {
+    icon: "/footer-icon.svg",
+  },
 };
 
 export default function RootLayout({
