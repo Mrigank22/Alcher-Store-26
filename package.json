@@ -25,7 +25,8 @@
     "payload": "^3.0.0-beta.135",
     "pdfkit": "^0.17.2",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react-dom": "^19.2.3",
+    "svg-to-pdfkit": "^0.1.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",

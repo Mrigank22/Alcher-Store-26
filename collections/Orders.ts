@@ -121,10 +121,6 @@ export const Orders: CollectionConfig = {
       type: 'date',
     },
     {
-      name: 'paymentDate',
-      type: 'date',
-    },
-    {
       name: 'deliveryDate',
       type: 'date',
     },
