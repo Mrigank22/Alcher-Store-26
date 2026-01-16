@@ -363,8 +363,7 @@ export default function ProductDetailPage() {
 
         {p.description && (
           <p className="text-sm font-semibold leading-relaxed text-black max-w-full md:max-w-md">
-            {/* {p.description} */}
-            Excepteur ut qui esse labore cupidatat officia quis veniam occaecat pariatur velit excepteur ex Lorem. Sint qui minim amet non esse culpa anim. Elit laborum veniam aliquip exercitation anim laborum consectetur irure cupidatat aliquip ipsum consectetur anim ad cupidatat. Nisi occaecat nulla incididunt proident cupidatat enim anim eiusmod amet duis minim laboris.
+             {p.description} 
           </p>
         )}
 

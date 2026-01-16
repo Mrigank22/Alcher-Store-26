@@ -144,10 +144,6 @@ const OrderSchema = new Schema(
       type: Date,
       default: Date.now,
     },
-    paymentDate: {
-      type: Date,
-      default: null,
-    },
     deliveryDate: {
       type: Date,
       default: null,

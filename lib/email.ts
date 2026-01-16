@@ -144,12 +144,6 @@ export async function sendOrderConfirmationEmail(order: any) {
               </div>
             </div>
             
-            ${invoiceUrl ? `
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}${invoiceUrl}" style="background-color: #2D5F2E; color: #ffffff !important; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 500;">Download Invoice</a>
-              </div>
-            ` : ''}
-            
             <div style="background-color: #f0f9f0; padding: 15px; border-radius: 8px; margin-top: 30px;">
               <p style="margin: 0;"><strong>Track Your Order:</strong></p>
               <p style="margin: 5px 0 0 0;">You can track your order status by logging into your account.</p>

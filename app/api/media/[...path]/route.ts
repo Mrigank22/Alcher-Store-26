@@ -4,10 +4,11 @@ import path from "path";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
   try {
-    const filePath = path.join(process.cwd(), "media", ...params.path);
+    const { path: pathSegments } = await params;
+    const filePath = path.join(process.cwd(), "media", ...pathSegments);
 
     if (!fs.existsSync(filePath)) {
       return NextResponse.json(
