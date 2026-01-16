@@ -27,6 +27,12 @@ export const Products: CollectionConfig = {
       type: 'textarea',
     },
     {
+      name: 'productType',
+      label: 'Product Type',
+      type: 'text',
+      defaultValue: 'T-Shirt',
+    },
+    {
       // name: 'image',
       // type: 'upload',
       // relationTo: 'media', // Links to the Media collection

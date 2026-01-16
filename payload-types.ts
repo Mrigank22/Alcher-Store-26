@@ -73,6 +73,8 @@ export interface Config {
     categories: Category;
     orders: Order;
     feedback: Feedback;
+    reviews: Review;
+    subscribers: Subscriber;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -86,6 +88,8 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     feedback: FeedbackSelect<false> | FeedbackSelect<true>;
+    reviews: ReviewsSelect<false> | ReviewsSelect<true>;
+    subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -196,6 +200,7 @@ export interface Product {
   name: string;
   price: number;
   description?: string | null;
+  productType?: string | null;
   images: (string | Media)[];
   category?: (string | Category)[] | null;
   hasSize?: boolean | null;
@@ -231,39 +236,78 @@ export interface Category {
  */
 export interface Order {
   id: string;
-  orderId?: string | null;
+  orderId: string;
   user: string | User;
-  status?: ('pending' | 'payment_failed' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled') | null;
+  status?:
+    | (
+        | 'pending'
+        | 'payment_failed'
+        | 'payment_error'
+        | 'confirmed'
+        | 'processing'
+        | 'shipped'
+        | 'delivered'
+        | 'cancelled'
+      )
+    | null;
+  orderStatus?:
+    | (
+        | 'pending'
+        | 'payment_failed'
+        | 'payment_error'
+        | 'confirmed'
+        | 'processing'
+        | 'shipped'
+        | 'delivered'
+        | 'cancelled'
+      )
+    | null;
   items?:
     | {
         product: string | Product;
-        productName?: string | null;
+        productName: string;
+        productImage: string;
         quantity: number;
         size?: string | null;
-        price?: number | null;
-        subtotal?: number | null;
+        colour?: string | null;
+        price: number;
+        subtotal: number;
         id?: string | null;
       }[]
     | null;
-  billing?: {
-    subtotal?: number | null;
-    shippingCost?: number | null;
-    tax?: number | null;
-    totalAmount?: number | null;
+  subtotal: number;
+  shippingCost?: number | null;
+  tax?: number | null;
+  totalAmount: number;
+  paymentStatus?: ('pending' | 'processing' | 'completed' | 'failed' | 'refunded') | null;
+  paymentMethod?: ('sbi' | 'cod') | null;
+  paymentGateway?: ('SBI' | 'COD') | null;
+  sbiTransactionId?: string | null;
+  paymentDetails?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  paidAt?: string | null;
+  shippingAddress: {
+    name: string;
+    phone: string;
+    email?: string | null;
+    addressLine1: string;
+    addressLine2?: string | null;
+    city: string;
+    state: string;
+    pincode: string;
   };
-  shippingAddress?: {
-    name?: string | null;
-    addressLine1?: string | null;
-    city?: string | null;
-    state?: string | null;
-    pincode?: string | null;
-    phone?: string | null;
-  };
-  paymentInfo?: {
-    razorpayOrderId?: string | null;
-    razorpayPaymentId?: string | null;
-    status?: ('pending' | 'completed' | 'failed') | null;
-  };
+  orderDate?: string | null;
+  deliveryDate?: string | null;
+  notes?: string | null;
+  invoiceUrl?: string | null;
+  invoiceNumber?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -276,6 +320,60 @@ export interface Feedback {
   order: string | Order;
   rating: number;
   comment?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews".
+ */
+export interface Review {
+  id: string;
+  /**
+   * Product ID this review belongs to
+   */
+  product_id: string;
+  /**
+   * User who created this review
+   */
+  userId?: (string | null) | User;
+  /**
+   * Name of the reviewer
+   */
+  userName: string;
+  /**
+   * Review content
+   */
+  content: string;
+  /**
+   * Rating from 1 to 5
+   */
+  rating: number;
+  /**
+   * URL of user profile image
+   */
+  userImage?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscribers".
+ */
+export interface Subscriber {
+  id: string;
+  /**
+   * Name of the subscriber
+   */
+  name: string;
+  /**
+   * Email address (unique)
+   */
+  email: string;
+  /**
+   * Whether the subscriber is currently subscribed
+   */
+  isSubscribed?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -326,6 +424,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'feedback';
         value: string | Feedback;
+      } | null)
+    | ({
+        relationTo: 'reviews';
+        value: string | Review;
+      } | null)
+    | ({
+        relationTo: 'subscribers';
+        value: string | Subscriber;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -441,6 +547,7 @@ export interface ProductsSelect<T extends boolean = true> {
   name?: T;
   price?: T;
   description?: T;
+  productType?: T;
   images?: T;
   category?: T;
   hasSize?: T;
@@ -479,42 +586,47 @@ export interface OrdersSelect<T extends boolean = true> {
   orderId?: T;
   user?: T;
   status?: T;
+  orderStatus?: T;
   items?:
     | T
     | {
         product?: T;
         productName?: T;
+        productImage?: T;
         quantity?: T;
         size?: T;
+        colour?: T;
         price?: T;
         subtotal?: T;
         id?: T;
       };
-  billing?:
-    | T
-    | {
-        subtotal?: T;
-        shippingCost?: T;
-        tax?: T;
-        totalAmount?: T;
-      };
+  subtotal?: T;
+  shippingCost?: T;
+  tax?: T;
+  totalAmount?: T;
+  paymentStatus?: T;
+  paymentMethod?: T;
+  paymentGateway?: T;
+  sbiTransactionId?: T;
+  paymentDetails?: T;
+  paidAt?: T;
   shippingAddress?:
     | T
     | {
         name?: T;
+        phone?: T;
+        email?: T;
         addressLine1?: T;
+        addressLine2?: T;
         city?: T;
         state?: T;
         pincode?: T;
-        phone?: T;
       };
-  paymentInfo?:
-    | T
-    | {
-        razorpayOrderId?: T;
-        razorpayPaymentId?: T;
-        status?: T;
-      };
+  orderDate?: T;
+  deliveryDate?: T;
+  notes?: T;
+  invoiceUrl?: T;
+  invoiceNumber?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -526,6 +638,31 @@ export interface FeedbackSelect<T extends boolean = true> {
   order?: T;
   rating?: T;
   comment?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews_select".
+ */
+export interface ReviewsSelect<T extends boolean = true> {
+  product_id?: T;
+  userId?: T;
+  userName?: T;
+  content?: T;
+  rating?: T;
+  userImage?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscribers_select".
+ */
+export interface SubscribersSelect<T extends boolean = true> {
+  name?: T;
+  email?: T;
+  isSubscribed?: T;
   updatedAt?: T;
   createdAt?: T;
 }

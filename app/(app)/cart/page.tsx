@@ -62,11 +62,11 @@ lg:left-[560px]"/>
 </div>
 
 <div className="lg:hidden flex absolute inset-0 pointer-events-none overflow-hidden z-0">
-  <img src="/group410.png" alt="" 
+  <img src="/Group410.png" alt="" 
   className="absolute
   top-[90px]
   left-0"/>
-   <img src="/group409.png" alt="" 
+   <img src="/Group409.png" alt="" 
   className="absolute
   top-[75px]
   right-0"/>

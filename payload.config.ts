@@ -13,6 +13,8 @@ import { Products } from './collections/Products'
 import { Categories } from './collections/Categories'
 import { Orders } from './collections/Orders'
 import { Feedback } from './collections/Feedback'
+import { Reviews } from './collections/Reviews'
+import { Subscribers } from './collections/Subscribers'
 
 
 
@@ -32,7 +34,9 @@ export default buildConfig({
     Products, 
     Categories,
     Orders,
-    Feedback
+    Feedback,
+    Reviews,
+    Subscribers
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

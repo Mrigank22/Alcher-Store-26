@@ -47,6 +47,7 @@ interface Product {
   hasSize: boolean;
   hasColor: boolean;
   variants: Variant[];
+  productType?: string;
 }
 
 
@@ -358,13 +359,12 @@ export default function ProductDetailPage() {
       <div className="flex flex-col gap-6">
         <div>
           <h1 className="text-[28px] md:text-[40px] font-medium mb-1">{p.name}</h1>
-          <p className=" text-xs md:text-sm font-semibold text-[#5E5E5E]">Regular Fit T-Shirt</p>
+          <p className=" text-xs md:text-sm font-semibold text-[#5E5E5E]">{p.productType || "Regular Fit T-Shirt"}</p>
         </div>
 
         {p.description && (
           <p className="text-sm font-semibold leading-relaxed text-black max-w-full md:max-w-md">
-            {/* {p.description} */}
-            Excepteur ut qui esse labore cupidatat officia quis veniam occaecat pariatur velit excepteur ex Lorem. Sint qui minim amet non esse culpa anim. Elit laborum veniam aliquip exercitation anim laborum consectetur irure cupidatat aliquip ipsum consectetur anim ad cupidatat. Nisi occaecat nulla incididunt proident cupidatat enim anim eiusmod amet duis minim laboris.
+             {p.description} 
           </p>
         )}
 

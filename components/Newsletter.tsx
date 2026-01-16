@@ -7,6 +7,7 @@ export default function Newsletter() {
   const [formData, setFormData] = useState({ name: "", email: "" });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +80,7 @@ export default function Newsletter() {
               
               <button 
                 type="submit"
-                disabled={status === "loading" || status === "success"}
+                disabled={status === "loading" || status === "success" || !agreedToTerms}
                 className="bg-[#052e16] text-white rounded-full px-10 py-3 md:py-4 text-sm font-black uppercase tracking-wider hover:bg-black transition-all disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap shadow-md hover:scale-105"
               >
                 {status === "loading" ? "..." : status === "success" ? "Joined!" : "Subscribe"}
@@ -90,10 +91,12 @@ export default function Newsletter() {
               <input 
                 type="checkbox" 
                 id="terms" 
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
                 className="mt-0.5 w-4 h-4 accent-[#052e16] cursor-pointer" 
               />
               <label htmlFor="terms" className="text-[10px] sm:text-xs text-black/60 font-medium leading-relaxed max-w-3xl cursor-pointer">
-                Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.
+                By subscribing, I agree to receive promotional emails and updates from Alcher Store.
               </label>
             </div>
 

@@ -27,6 +27,7 @@
     "razorpay": "^2.9.6",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "svg-to-pdfkit": "^0.1.8",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

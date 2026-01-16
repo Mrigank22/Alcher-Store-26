@@ -234,7 +234,10 @@ export default function ProfilePage() {
 
               {/* Action Buttons */}
               <div className="space-y-3">
-                <button className="w-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-medium py-3 rounded-lg transition-colors">
+                <button 
+                  onClick={() => router.push('/forgot-password')}
+                  className="w-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-medium py-3 rounded-lg transition-colors"
+                >
                   Change Password
                 </button>
                 <button 
