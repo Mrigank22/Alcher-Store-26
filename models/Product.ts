@@ -53,6 +53,20 @@ const productSchema = new mongoose.Schema(
       default: "Alcher merch",
     },
 
+    /* Category */
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ProductCategory",
+      required: false,
+    },
+
+    /* Product Type */
+    productType: {
+      type: String,
+      trim: true,
+      default: "T-Shirt",
+    },
+
     images: {
   type: [String],
   required: true,

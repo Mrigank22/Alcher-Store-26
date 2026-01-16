@@ -21,6 +21,7 @@ type Product = {
   price: number;
   images: MediaImage[]; // ✅ correct
   primaryImageIndex?: number;
+  productType?: string;
 };
 
 export default function ProductCard({ product }: { product: Product }) {
@@ -117,7 +118,7 @@ export default function ProductCard({ product }: { product: Product }) {
       text-black
     "
           >
-            T-shirt
+            {product.productType || "T-shirt"}
           </p>
         </div>
 
