@@ -200,6 +200,7 @@ export interface Product {
   name: string;
   price: number;
   description?: string | null;
+  productType?: string | null;
   images: (string | Media)[];
   category?: (string | Category)[] | null;
   hasSize?: boolean | null;
@@ -546,6 +547,7 @@ export interface ProductsSelect<T extends boolean = true> {
   name?: T;
   price?: T;
   description?: T;
+  productType?: T;
   images?: T;
   category?: T;
   hasSize?: T;

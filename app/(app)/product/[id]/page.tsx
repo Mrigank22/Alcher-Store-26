@@ -47,6 +47,7 @@ interface Product {
   hasSize: boolean;
   hasColor: boolean;
   variants: Variant[];
+  productType?: string;
 }
 
 
@@ -358,7 +359,7 @@ export default function ProductDetailPage() {
       <div className="flex flex-col gap-6">
         <div>
           <h1 className="text-[28px] md:text-[40px] font-medium mb-1">{p.name}</h1>
-          <p className=" text-xs md:text-sm font-semibold text-[#5E5E5E]">Regular Fit T-Shirt</p>
+          <p className=" text-xs md:text-sm font-semibold text-[#5E5E5E]">{p.productType || "Regular Fit T-Shirt"}</p>
         </div>
 
         {p.description && (

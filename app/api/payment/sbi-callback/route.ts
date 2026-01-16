@@ -163,6 +163,37 @@ export async function POST(req: NextRequest) {
         
         console.log('[SBI Callback] Payment SUCCESS - Order updated:', order.orderId);
         
+        // Reduce stock for all items in the order
+        try {
+          for (const item of order.items) {
+            const product = await Order.db.model('Product').findById(item.product);
+            if (product) {
+              // Find the variant that matches the order item
+              const variantIndex = product.variants.findIndex((v: any) => 
+                (!product.hasSize || v.size === item.size) &&
+                (!product.hasColor || v.color === item.colour)
+              );
+              
+              if (variantIndex !== -1) {
+                // Reduce stock
+                product.variants[variantIndex].stock -= item.quantity;
+                await product.save();
+                console.log('[SBI Callback] Stock reduced for product:', {
+                  productId: product._id,
+                  productName: product.name,
+                  size: item.size,
+                  color: item.colour,
+                  quantityReduced: item.quantity,
+                  remainingStock: product.variants[variantIndex].stock
+                });
+              }
+            }
+          }
+        } catch (stockError) {
+          console.error('[SBI Callback] Error reducing stock:', stockError);
+          // Don't fail the payment if stock reduction fails
+        }
+        
         // Generate invoice number if not exists
         if (!order.invoiceNumber) {
           const date = new Date();
