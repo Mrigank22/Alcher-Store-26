@@ -71,8 +71,8 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
   doc
     .font("Helvetica")
     .fontSize(9)
-    .text("Ph.No.: 040-12345678", 400, 52, { align: "right", width: 175 })
-    .text("Email ID: alcheringa@iitg.ac.in", 400, 68, { align: "right", width: 175 });
+    .text("Ph.No.: +91 70606 33995", 400, 52, { align: "right", width: 175 })
+    .text("Email ID: creatives@alcheringa.co.in", 400, 68, { align: "right", width: 175 });
 
   // Invoice details section
   const sectionTop = 130;
@@ -219,7 +219,7 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
   yPos += 20;
   doc
     .text("GST/TAX", 395, yPos)
-    .text(`Rs${order.tax || order.subtotal}`, 485, yPos, { align: "right", width: 90 });
+    .text(`Rs${order.tax}`, 485, yPos, { align: "right", width: 90 });
 
   // Horizontal line before grand total
   yPos += 15;

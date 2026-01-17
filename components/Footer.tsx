@@ -92,51 +92,75 @@ export default function Footer() {
               {/* Contact 1 */}
               <div className="flex flex-col gap-1">
                 <h4 className="font-geist font-bold text-xl sm:text-2xl text-[#A7C5AA]">
-                  Shashank
+                  Ayush Bahuguna
                 </h4>
                 <p className="font-geist text-xs opacity-80 mb-2 uppercase tracking-wide">
-                  PR Head
+                  Web Design Head
                 </p>
                 <div className="flex flex-col gap-1.5">
                   <a
-                    href="tel:9876543210"
+                    href="tel:7060633995"
                     className="flex items-center gap-2 text-xs sm:text-sm hover:text-white transition-colors group"
                   >
                     <Phone size={12} className="opacity-70 group-hover:opacity-100" />
-                    <span>9876543210</span>
+                    <span>+91 70606 33995</span>
                   </a>
                   <a
-                    href="mailto:mailID@alcheringa.in"
+                    href="mailto:creatives@alcheringa.co.in"
                     className="flex items-center gap-2 text-xs sm:text-sm hover:text-white transition-colors group"
                   >
                     <Mail size={12} className="opacity-70 group-hover:opacity-100" />
-                    <span>mailID@alcheringa.in</span>
+                    <span>creatives@alcheringa.co.in</span>
                   </a>
                 </div>
               </div>
-
               {/* Contact 2 */}
               <div className="flex flex-col gap-1">
                 <h4 className="font-geist font-bold text-xl sm:text-2xl text-[#A7C5AA]">
-                  Khushi Gupta
+                  Mrigank Pendyala
                 </h4>
                 <p className="font-geist text-xs opacity-80 mb-2 uppercase tracking-wide">
-                  PR Head
+                  WebOps Head
                 </p>
                 <div className="flex flex-col gap-1.5">
                   <a
-                    href="tel:9876543210"
+                      href="tel:8008968481"
+                      className="flex items-center gap-2 text-xs sm:text-sm hover:text-white transition-colors group"
+                  >
+                    <Phone size={12} className="opacity-70 group-hover:opacity-100" />
+                    <span>+91 80089 68481</span>
+                  </a>
+                  <a
+                      href="mailto:webops@alcheringa.co.in"
+                      className="flex items-center gap-2 text-xs sm:text-sm hover:text-white transition-colors group"
+                  >
+                    <Mail size={12} className="opacity-70 group-hover:opacity-100" />
+                    <span>webops@alcheringa.co.in</span>
+                  </a>
+                </div>
+              </div>
+              {/* Contact 3 */}
+              <div className="flex flex-col gap-1">
+                <h4 className="font-geist font-bold text-xl sm:text-2xl text-[#A7C5AA]">
+                  Kshitij
+                </h4>
+                <p className="font-geist text-xs opacity-80 mb-2 uppercase tracking-wide">
+                  Creatives Head
+                </p>
+                <div className="flex flex-col gap-1.5">
+                  <a
+                    href="tel:9354082437"
                     className="flex items-center gap-2 text-xs sm:text-sm hover:text-white transition-colors group"
                   >
                     <Phone size={12} className="opacity-70 group-hover:opacity-100" />
-                    <span>9876543210</span>
+                    <span>+91 93540 82437</span>
                   </a>
                   <a
-                    href="mailto:mailID@alcheringa.in"
+                    href="mailto:creatives@alcheringa.co.in"
                     className="flex items-center gap-2 text-xs sm:text-sm hover:text-white transition-colors group"
                   >
                     <Mail size={12} className="opacity-70 group-hover:opacity-100" />
-                    <span>mailID@alcheringa.in</span>
+                    <span>creatives@alcheringa.co.in</span>
                   </a>
                 </div>
               </div>
