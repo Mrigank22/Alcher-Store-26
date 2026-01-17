@@ -46,7 +46,7 @@ function CheckoutContent() {
   const [processing, setProcessing] = useState(false);
   const [subtotal, setSubtotal] = useState(0);
   const [shippingCost, setShippingCost] = useState(0);
-  const [deliveryFee, setDeliveryFee] = useState(2);
+  const [deliveryFee, setDeliveryFee] = useState(100);
   const [tax, setTax] = useState(0);
   const [total, setTotal] = useState(0);
 
@@ -79,7 +79,7 @@ function CheckoutContent() {
       if (!session?.user?.email) return;
 
       // Set delivery fee to 1 rupee
-      setDeliveryFee(2);
+      setDeliveryFee(100);
 
       // Start progress simulation
       const progressInterval = setInterval(() => {
