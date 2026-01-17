@@ -84,7 +84,7 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
     .fillColor("#000000")
     .text("Invoice To:", 20, sectionTop);
   
-  const customerName = order.user?.name || order.user?.username || order.customerName || "Recipient's Name";
+  const customerName = order.shippingAddress?.name || order.customerName || "Recipient's Name";
   const addressLine1 = order.shippingAddress?.addressLine1 || order.shippingAddress?.street || "";
   const addressLine2 = order.shippingAddress?.addressLine2 || "";
   const fullAddress = [addressLine1, addressLine2].filter(Boolean).join(", ");

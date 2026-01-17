@@ -65,7 +65,7 @@ export const Products: CollectionConfig = {
         {
           name: 'size',
           type: 'select',
-          options: ['S', 'M', 'L', 'XL'],
+          options: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'],
         },
         {
           name: 'color',

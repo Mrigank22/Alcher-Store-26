@@ -411,26 +411,23 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="flex gap-4 flex-wrap">
-              {p.variants.map(
-                (v) =>
-                  v.size && (
-                    <button
-                      key={v.size}
-                      disabled={v.stock === 0}
-                      onClick={() => setSelectedSize(v.size!)}
-                      className={`px-4 md:px-6 py-1.5 md:py-2 rounded-full text-sm md:text-base border transition font-medium
-                        ${
-                          selectedSize === v.size
-                            ? "bg-[#1F7A1F] text-white"
-                            : "bg-[#D1E9D4] text-[#5E5E5E]"
-                        }
-                        ${v.stock === 0 && "opacity-40 cursor-not-allowed"}
-                      `}
-                    >
-                      {v.size}
-                    </button>
-                  )
-              )}
+              {p.variants
+                .filter((v) => v.size && v.stock > 0) // Only show sizes with stock > 0
+                .map((v) => (
+                  <button
+                    key={v.size}
+                    onClick={() => setSelectedSize(v.size!)}
+                    className={`px-4 md:px-6 py-1.5 md:py-2 rounded-full text-sm md:text-base border transition font-medium
+                      ${
+                        selectedSize === v.size
+                          ? "bg-[#1F7A1F] text-white"
+                          : "bg-[#D1E9D4] text-[#5E5E5E]"
+                      }
+                    `}
+                  >
+                    {v.size}
+                  </button>
+                ))}
             </div>
           </div>
         )}
