@@ -71,7 +71,7 @@ export default function MerchBox({ showHeading = true }: MerchBoxProps) {
 
   return (
       <section className="bg-[#F0FAF0] py-24 font-gotham">
-        <div className="max-w-[1200px] mx-auto px-6 sm:px-10 lg:px-20">
+        <div className="max-w-full mx-auto px-6 sm:px-10 lg:px-20">
           {showHeading && (
               <div className="text-center text-4xl font-extrabold mb-20 text-green-950">
                 MERCHANDISE
