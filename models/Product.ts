@@ -5,7 +5,7 @@ const variantSchema = new mongoose.Schema(
   {
     size: {
       type: String,
-      enum: ["S", "M", "L", "XL","XXL"],
+      enum: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
       required: false,
     },
 
