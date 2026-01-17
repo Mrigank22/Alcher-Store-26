@@ -46,7 +46,7 @@ function CheckoutContent() {
   const [processing, setProcessing] = useState(false);
   const [subtotal, setSubtotal] = useState(0);
   const [shippingCost, setShippingCost] = useState(0);
-  const [deliveryFee, setDeliveryFee] = useState(0);
+  const [deliveryFee, setDeliveryFee] = useState(1);
   const [tax, setTax] = useState(0);
   const [total, setTotal] = useState(0);
 
@@ -78,14 +78,8 @@ function CheckoutContent() {
     try {
       if (!session?.user?.email) return;
 
-      // Fetch delivery fee from DeliveryConfig
-      try {
-        const host = window.location.host;
-        const deliveryConfig = await getDeliveryConfig(host);
-        setDeliveryFee(deliveryConfig?.fee ?? 0);
-      } catch (e) {
-        setDeliveryFee(0);
-      }
+      // Set delivery fee to 1 rupee
+      setDeliveryFee(1);
 
       // Start progress simulation
       const progressInterval = setInterval(() => {
