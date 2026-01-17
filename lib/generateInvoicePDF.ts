@@ -108,18 +108,20 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
     .fontSize(10)
     .text("Payment Details:", 223, sectionTop);
   
-  doc
-    .font("Helvetica-Bold")
-    .fontSize(9)
-    .text(order.paymentMethod || "SBI", 223, sectionTop + 20, { width: 170 });
+  const paymentMethod = order.paymentMethod || "SBI";
+  const transactionId = order.sbiTransactionId || order.paymentDetails?.bankRefNo || "N/A";
+  const atrn = order.paymentDetails?.atrn || "";
   
   doc
     .font("Helvetica")
     .fontSize(9)
-    .text(order.sbiTransactionId || order.paymentDetails?.bankRefNo || "N/A", 223, sectionTop + 35, { width: 170 });
+    .text(`Payment Mode: ${paymentMethod}`, 223, sectionTop + 20, { width: 170 });
   
-  if (order.paymentDetails?.atrn) {
-    doc.text(`ATRN: ${order.paymentDetails.atrn}`, 223, sectionTop + 48, { width: 170 });
+  doc
+    .text(`Transaction ID: ${transactionId}`, 223, sectionTop + 35, { width: 170 });
+  
+  if (atrn) {
+    doc.text(`ATRN: ${atrn}`, 223, sectionTop + 55, { width: 170 });
   }
 
   // Order ID and date (Right)
