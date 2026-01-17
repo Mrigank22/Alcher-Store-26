@@ -55,13 +55,13 @@ export default async function CartPage() {
 alt=""
 className="absolute
 lg:top-[-90px]
-lg:left-[995px]"/>
+lg:right-0"/>
 
 <img src="/image515.png"
 alt=""
 className="absolute
 lg:top-[15px]
-lg:left-[560px]"/>
+lg:right-0"/>
 </div>
 
 <div className="lg:hidden flex absolute inset-0 pointer-events-none overflow-hidden z-0">
