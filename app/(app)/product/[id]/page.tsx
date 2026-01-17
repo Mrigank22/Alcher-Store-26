@@ -77,6 +77,7 @@ export default function ProductDetailPage() {
   const [adding, setAdding] = useState(false);
   const [buying, setBuying] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const [showSizeChart, setShowSizeChart] = useState(false);
   
   // Touch swipe state
   const [touchStart, setTouchStart] = useState(0);
@@ -198,6 +199,19 @@ export default function ProductDetailPage() {
 
   const isOutOfStock =
     totalStock === 0 || (p.hasSize && p.variants.every((v) => v.stock === 0));
+
+  /* ================= SIZE CHART MAPPING ================= */
+  
+  const getSizeChartImage = (productId: string): string | null => {
+    const sizeChartMap: Record<string, string> = {
+      'ALCH001': '/shirt_chart.jpeg',
+      'ALCH002': '/over_chart.jpeg',
+      'ALCH003': '/hoodie_chart.jpeg',
+    };
+    return sizeChartMap[productId] || null;
+  };
+
+  const sizeChartImage = getSizeChartImage(p.product_id);
 
   /* ================= ADD TO CART ================= */
 
@@ -386,9 +400,14 @@ export default function ProductDetailPage() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <p className="text-base font-bold">SIZE</p>
-              <span className="text-sm text-[#188123] font-medium underline cursor-pointer">
-                SIZE CHART
-              </span>
+              {sizeChartImage && (
+                <button 
+                  onClick={() => setShowSizeChart(true)}
+                  className="text-sm text-[#188123] font-medium underline cursor-pointer hover:text-[#126d1a] transition"
+                >
+                  SIZE CHART
+                </button>
+              )}
             </div>
 
             <div className="flex gap-4 flex-wrap">
@@ -623,6 +642,34 @@ export default function ProductDetailPage() {
 </div>
   )}
 </section>
+
+{/* Size Chart Modal */}
+{showSizeChart && sizeChartImage && (
+  <div 
+    className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+    onClick={() => setShowSizeChart(false)}
+  >
+    <div 
+      className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto p-4 relative"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        onClick={() => setShowSizeChart(false)}
+        className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-bold z-10 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg"
+      >
+        ×
+      </button>
+      <div className="flex flex-col items-center">
+        <h3 className="text-2xl font-bold mb-4 text-center">Size Chart</h3>
+        <img 
+          src={sizeChartImage} 
+          alt="Size Chart" 
+          className="w-full h-auto max-w-3xl"
+        />
+      </div>
+    </div>
+  </div>
+)}
 </>
 );
 

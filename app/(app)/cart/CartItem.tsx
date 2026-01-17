@@ -88,9 +88,6 @@ export default function CartItem({
             Size:{" "}
             <span className="font-medium text-[#5E5E5E]">
               {item.size}
-            </span>{" "}
-            <span className="ml-4 font-medium text-[#188123] cursor-pointer underline">
-              CHOOSE SIZE
             </span>
           </p>
         )}

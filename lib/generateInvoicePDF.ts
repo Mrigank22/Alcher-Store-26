@@ -1,189 +1,263 @@
 import PDFDocument from "pdfkit";
 import fs from "fs";
 import path from "path";
-import SVGtoPDF from "svg-to-pdfkit";
 
+/**
+ * Generate invoice PDF matching exact design
+ */
 export async function generateInvoicePDF(order: any): Promise<string> {
   return new Promise((resolve, reject) => {
     try {
-      console.log('[Invoice Generation] Starting PDF generation for order:', order.orderId);
+      const doc = new PDFDocument({
+        size: "A4",
+        margin: 0,
+      });
 
+      const filename = `invoice-${order.orderId}-${Date.now()}.pdf`;
       const invoicesDir = path.join(process.cwd(), "invoices");
-      
-      // Ensure invoices directory exists
+
       if (!fs.existsSync(invoicesDir)) {
         fs.mkdirSync(invoicesDir, { recursive: true });
       }
 
-      const pdfFileName = `invoice-${order.orderId}-${Date.now()}.pdf`;
-      const pdfPath = path.join(invoicesDir, pdfFileName);
+      const invoicePath = path.join(invoicesDir, filename);
+      const writeStream = fs.createWriteStream(invoicePath);
 
-      const doc = new PDFDocument({ 
-        margin: 50, 
-        size: "A4",
-        bufferPages: true,
-        font: 'Courier' 
-      });
-      
-      const stream = fs.createWriteStream(pdfPath);
-      doc.pipe(stream);
-
-      // --- WATERMARK SECTION (Reading from public/logo.svg) ---
-      try {
-        // Construct path to public/logo.svg
-        // process.cwd() gets the root folder where package.json is
-        const logoPath = path.join(process.cwd(), "public", "logo.svg");
-
-        if (fs.existsSync(logoPath)) {
-          const logoSVG = fs.readFileSync(logoPath, "utf-8");
-          
-          doc.save();
-          doc.opacity(0.08); // 8% opacity
-          SVGtoPDF(doc, logoSVG, 150, 320, {
-            width: 300, 
-            height: 300,
-            preserveAspectRatio: 'xMidYMid meet'
-          });
-          doc.opacity(1);
-          doc.restore();
-          console.log('[Invoice Generation] Logo loaded from:', logoPath);
-        } else {
-          console.warn('[Invoice Generation] Logo file missing at:', logoPath);
-        }
-      } catch (logoError) {
-        console.error('[Invoice Generation] Watermark failed:', logoError);
-      }
-      // ---------------------------------------------------------
-
+      doc.pipe(writeStream);
       generateInvoiceContent(doc, order);
-
       doc.end();
 
-      stream.on("finish", () => resolve(pdfFileName));
-      stream.on("error", (err) => reject(err));
-
+      writeStream.on("finish", () => resolve(filename));
+      writeStream.on("error", (err) => reject(err));
     } catch (error) {
       reject(error);
     }
   });
 }
 
-// ... rest of generateInvoiceContent function remains the same
 function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
-  // (Keep your existing content generation code here)
-  // ...
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("en-IN", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const formatCurrency = (amount: number) => `Rs. ${amount.toFixed(2)}`;
-
-  // Header
-  doc
-    .fontSize(28)
-    .fillColor("#2D5F2E")
-    .text("INVOICE", { align: "center" })
-    .moveDown(0.5);
-
-  doc
-    .fontSize(20)
-    .fillColor("#000000")
-    .text("Alcheringa Store", { align: "center" })
-    .fontSize(10)
-    .fillColor("#333333")
-    .text("IIT Guwahati", { align: "center" })
-    .moveDown(2);
-
-  // Invoice Details
-  const leftColumn = 50;
-  const rightColumn = 350;
-  let currentY = doc.y;
-
-  doc
-    .fontSize(12).fillColor("#2D5F2E").text("Invoice Details", leftColumn, currentY)
-    .fontSize(10).fillColor("#000000")
-    .text(`Invoice No: ${order.invoiceNumber}`, leftColumn, currentY + 20)
-    .text(`Order ID: ${order.orderId}`, leftColumn, currentY + 35)
-    .text(`Date: ${formatDate(order.createdAt)}`, leftColumn, currentY + 50);
-
-  if (order.sbiTransactionId) {
-    doc.text(`Transaction ID: ${order.sbiTransactionId}`, leftColumn, currentY + 65);
-  }
-
-  // Shipping Address
-  doc
-    .fontSize(12).fillColor("#2D5F2E").text("Ship To", rightColumn, currentY)
-    .fontSize(10).fillColor("#000000")
-    .text(order.shippingAddress.name, rightColumn, currentY + 20)
-    .text(order.shippingAddress.addressLine1, rightColumn, currentY + 35)
-    .text(`${order.shippingAddress.city}, ${order.shippingAddress.state}`, rightColumn, currentY + 50)
-    .text(`${order.shippingAddress.pincode}`, rightColumn, currentY + 65)
-    .text(order.shippingAddress.phone, rightColumn, currentY + 80);
-
-  doc.moveDown(4);
-
-  // Items Table
-  const tableTop = doc.y + 20;
-  doc.fontSize(11).fillColor("#FFFFFF").rect(50, tableTop, 495, 25).fill("#2D5F2E");
+  const pageWidth = 595.28;
+  const pageHeight = 841.89;
   
-  doc.fillColor("#FFFFFF")
-    .text("Item", 60, tableTop + 7, { width: 200 })
-    .text("Size", 270, tableTop + 7, { width: 50 })
-    .text("Qty", 330, tableTop + 7, { width: 50 })
-    .text("Price", 390, tableTop + 7, { width: 70 })
-    .text("Total", 470, tableTop + 7, { width: 70 });
+  // Header with dark green background
+  doc.rect(0, 0, pageWidth, 100).fill("#021B05");
 
-  let yPosition = tableTop + 30;
-  doc.fillColor("#000000").fontSize(10);
-
-  if (!order.items || order.items.length === 0) {
-    doc.text("No items in order", 60, yPosition, { width: 485, align: "center" });
-    yPosition += 25;
+  // Logo on left
+  const logoPath = path.join(process.cwd(), "public", "footer-icon.png");
+  if (fs.existsSync(logoPath)) {
+    doc.image(logoPath, 20, 25, { width: 50, height: 50 });
   }
 
-  (order.items || []).forEach((item: any) => {
-    doc
-      .text(item.product?.name || "Product", 60, yPosition, { width: 200 })
-      .text(item.size || "-", 270, yPosition, { width: 50 })
-      .text(item.quantity.toString(), 330, yPosition, { width: 50 })
-      .text(formatCurrency(item.price), 390, yPosition, { width: 70 })
-      .text(formatCurrency(item.price * item.quantity), 470, yPosition, { width: 70 });
+  // Text next to logo
+  doc
+    .font("Helvetica")
+    .fontSize(6)
+    .fillColor("#FFFFFF")
+    .text("IIT Guwahati's", 80, 30)
+    .font("Helvetica-Bold")
+    .fontSize(14)
+    .text("Alcheringa", 80, 42)
+    .font("Helvetica")
+    .fontSize(9)
+    .text("2026", 80, 60);
 
-    yPosition += 25;
+  // Header text on right
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(16)
+    .fillColor("#FFFFFF")
+    .text("Alcher Store", 400, 30, { align: "right", width: 175 });
+
+  doc
+    .font("Helvetica")
+    .fontSize(9)
+    .text("Ph.No.: 040-12345678", 400, 52, { align: "right", width: 175 })
+    .text("Email ID: alcheringa@iitg.ac.in", 400, 68, { align: "right", width: 175 });
+
+  // Invoice details section
+  const sectionTop = 130;
+  
+  // Invoice To (Left)
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(10)
+    .fillColor("#000000")
+    .text("Invoice To:", 20, sectionTop);
+  
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(9)
+    .text(order.customerName || "Recipient's Name", 20, sectionTop + 20, { width: 180 });
+  
+  doc
+    .font("Helvetica")
+    .fontSize(9)
+    .text(order.shippingAddress.street || "Address Line 1", 20, sectionTop + 35, { width: 180 })
+    .text(order.shippingAddress.city && order.shippingAddress.state 
+      ? `${order.shippingAddress.city}, ${order.shippingAddress.state}` 
+      : "Address Line 2", 20, sectionTop + 48, { width: 180 });
+
+  // Payment Details (Middle)
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(10)
+    .text("Payment Details:", 223, sectionTop);
+  
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(9)
+    .text(order.paymentMode || order.payment?.mode || "Payment Mode", 223, sectionTop + 20, { width: 170 });
+  
+  doc
+    .font("Helvetica")
+    .fontSize(9)
+    .text(order.transactionId || order.payment?.transactionId || "Transaction ID", 223, sectionTop + 35, { width: 170 });
+  
+  if (order.payment?.additionalInfo) {
+    doc.text(order.payment.additionalInfo, 223, sectionTop + 48, { width: 170 });
+  }
+
+  // Order ID and date (Right)
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(12)
+    .text(order.orderId, 420, sectionTop, { align: "right", width: 155 });
+  
+  doc
+    .font("Helvetica")
+    .fontSize(9)
+    .text(formatDate(order.orderDate), 420, sectionTop + 20, { align: "right", width: 155 });
+
+  // Items table
+  const tableTop = 225;
+  
+  // Table header
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(9)
+    .fillColor("#000000")
+    .text("ITEM DESCRIPTION", 27, tableTop)
+    .text("PRICE", 285, tableTop, { width: 80, align: "center" })
+    .text("QTY", 375, tableTop, { width: 40, align: "center" })
+    .text("TOTAL", 485, tableTop, { align: "right", width: 90 });
+
+  // Horizontal line under header
+  doc
+    .strokeColor("#CCCCCC")
+    .lineWidth(0.5)
+    .moveTo(20, tableTop + 13)
+    .lineTo(575, tableTop + 13)
+    .stroke();
+
+  // Table rows
+  let yPos = tableTop + 25;
+  
+  order.items.forEach((item: any) => {
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(10)
+      .fillColor("#000000")
+      .text(item.productName, 27, yPos, { width: 240 });
+    
+    yPos += 13;
+    doc
+      .font("Helvetica")
+      .fontSize(8)
+      .fillColor("#666666")
+      .text(`${item.productName}, Size ${item.size}`, 27, yPos, { width: 240 });
+    
+    doc
+      .font("Helvetica")
+      .fontSize(10)
+      .fillColor("#000000")
+      .text(`Rs${item.price}`, 285, yPos - 13, { width: 80, align: "center" })
+      .text(item.quantity.toString(), 375, yPos - 13, { width: 40, align: "center" })
+      .text(`Rs${item.subtotal}`, 485, yPos - 13, { align: "right", width: 90 });
+    
+    yPos += 28;
   });
 
-  // Line separator
-  doc.strokeColor("#ddd").lineWidth(1).moveTo(50, yPosition + 10).lineTo(545, yPosition + 10).stroke();
+  // Delivery Charges if shipping > 0
+  if (order.shipping > 0) {
+    yPos += 5;
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(10)
+      .fillColor("#000000")
+      .text("Delivery Charges", 27, yPos);
+    
+    doc.text(`Rs${order.shipping}`, 485, yPos, { align: "right", width: 90 });
+    
+    yPos += 28;
+  }
 
-  // Totals
-  yPosition += 30;
-  const totalsX = 400;
+  // Horizontal line before totals
+  yPos += 15;
+  doc
+    .strokeColor("#CCCCCC")
+    .lineWidth(0.5)
+    .moveTo(20, yPos)
+    .lineTo(575, yPos)
+    .stroke();
 
-  doc.text("Subtotal:", totalsX, yPosition, { width: 70, align: "right" })
-     .text(formatCurrency(order.subtotal), totalsX + 75, yPosition, { width: 70, align: "right" });
+  // Subtotal
+  yPos += 20;
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(10)
+    .text("SUB TOTAL", 395, yPos)
+    .text(`Rs${order.subtotal}`, 485, yPos, { align: "right", width: 90 });
 
-  yPosition += 20;
-  doc.text("Tax (18%):", totalsX, yPosition, { width: 70, align: "right" })
-     .text(formatCurrency(order.tax), totalsX + 75, yPosition, { width: 70, align: "right" });
+  // GST/TAX
+  yPos += 20;
+  doc
+    .text("GST/TAX", 395, yPos)
+    .text(`Rs${order.tax || order.subtotal}`, 485, yPos, { align: "right", width: 90 });
 
-  yPosition += 20;
-  doc.text("Shipping:", totalsX, yPosition, { width: 70, align: "right" })
-     .text(formatCurrency(order.shippingCost || 0), totalsX + 75, yPosition, { width: 70, align: "right" });
+  // Horizontal line before grand total
+  yPos += 15;
+  doc
+    .strokeColor("#CCCCCC")
+    .lineWidth(0.5)
+    .moveTo(395, yPos)
+    .lineTo(575, yPos)
+    .stroke();
 
-  yPosition += 25;
-  doc.strokeColor("#2D5F2E").lineWidth(2).moveTo(totalsX, yPosition).lineTo(545, yPosition).stroke();
+  // Grand Total
+  yPos += 20;
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(11)
+    .text("GRAND TOTAL", 395, yPos)
+    .text(`Rs${order.totalAmount}`, 485, yPos, { align: "right", width: 90 });
 
-  yPosition += 15;
-  doc.fontSize(14).fillColor("#2D5F2E")
-     .text("Total:", totalsX, yPosition, { width: 70, align: "right" })
-     .text(formatCurrency(order.totalAmount), totalsX + 75, yPosition, { width: 70, align: "right" });
+  // Notes section
+  const notesY = 650;
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(9)
+    .fillColor("#000000")
+    .text("Notes", 27, notesY);
+  
+  doc
+    .font("Helvetica")
+    .fontSize(8)
+    .fillColor("#666666")
+    .text("This is a computer-generated invoice and does not require a signature.", 27, notesY + 15);
 
-  // Footer
-  doc.fontSize(8).fillColor("#666")
-    .text("Thank you for your order!", 50, doc.page.height - 100, { align: "center", width: 495 })
-    .text("For any queries, contact us at support@alcheringa.in", 50, doc.page.height - 85, { align: "center", width: 495 });
+  // Footer message
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(11)
+    .fillColor("#000000")
+    .text("THANK YOU FOR SHOPPING WITH US !", 0, 710, { align: "center", width: pageWidth });
+}
+
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
