@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import CartItem from "./CartItem";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import { getDeliveryConfig } from "@/lib/getDeliveryConfig";
 
 async function getCart(email: string) {
   const h = await headers();
@@ -19,14 +20,22 @@ async function getCart(email: string) {
 
 export default async function CartPage() {
   const session = await getServerSession();
-
   if (!session?.user?.email) {
     redirect("/login");
   }
-
   const email = session.user.email;
   const cart = await getCart(email);
-
+  const h = await headers();
+  const host = h.get("host") ?? "";
+  let deliveryFee = 0;
+  try {
+    const deliveryConfig = await getDeliveryConfig(host);
+    deliveryFee = deliveryConfig?.fee ?? 0;
+  } catch (e) {
+    deliveryFee = 0;
+  }
+  const subtotal = cart.total_price;
+  const total = subtotal + deliveryFee;
   return (
 
 <div className="relative min-h-screen bg-[#F3F9F3] overflow-hidden">
@@ -104,11 +113,11 @@ lg:left-[560px]"/>
               <div className="space-y-2 text-sm text-[#5E5E5E] font-medium">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>₹{cart.total_price}</span>
+                  <span>₹{subtotal}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Delivery Charges</span>
-                  <span>₹0</span>
+                  <span>₹{deliveryFee}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>GST</span>
@@ -120,7 +129,7 @@ lg:left-[560px]"/>
 
               <div className="flex justify-between mb-6">
                 <span className="text-sm text-[#5E5E5E] font-medium">Total</span>
-                <span className="text-2xl text-black font-bold">₹{cart.total_price}</span>
+                <span className="text-2xl text-black font-bold">₹{total}</span>
               </div>
 
               <Link

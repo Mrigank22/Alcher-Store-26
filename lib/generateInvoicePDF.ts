@@ -216,11 +216,11 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
     .text("SUB TOTAL", 395, yPos)
     .text(`Rs${subtotalWithDelivery}`, 485, yPos, { align: "right", width: 90 });
 
-  // GST/TAX
+  // GST/TAX (always zero)
   yPos += 20;
   doc
     .text("GST/TAX", 395, yPos)
-    .text(`Rs${order.tax}`, 485, yPos, { align: "right", width: 90 });
+    .text(`Rs0`, 485, yPos, { align: "right", width: 90 });
 
   // Horizontal line before grand total
   yPos += 15;

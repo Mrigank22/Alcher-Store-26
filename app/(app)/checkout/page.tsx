@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Navbar from "@/components/Navbar";
 import LoadingScreen from "@/components/LoadingScreen";
+import { getDeliveryConfig } from "@/lib/getDeliveryConfig";
 
 interface CartItem {
   _id: string;
@@ -45,6 +46,7 @@ function CheckoutContent() {
   const [processing, setProcessing] = useState(false);
   const [subtotal, setSubtotal] = useState(0);
   const [shippingCost, setShippingCost] = useState(0);
+  const [deliveryFee, setDeliveryFee] = useState(0);
   const [tax, setTax] = useState(0);
   const [total, setTotal] = useState(0);
 
@@ -60,11 +62,11 @@ function CheckoutContent() {
   });
   const calculateTotals = (items: CartItem[]) => {
     const sub = items.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0
+      (sum, item) => sum + item.price * item.quantity,
+      0
     );
-    const shipping = 0; // Free shipping for all orders
-    const taxAmount = Math.round(sub * 0.18);
+    const shipping = deliveryFee;
+    const taxAmount = 0;
     const totalAmount = sub + shipping + taxAmount;
 
     setSubtotal(sub);
@@ -75,6 +77,15 @@ function CheckoutContent() {
   const fetchCart = async () => {
     try {
       if (!session?.user?.email) return;
+
+      // Fetch delivery fee from DeliveryConfig
+      try {
+        const host = window.location.host;
+        const deliveryConfig = await getDeliveryConfig(host);
+        setDeliveryFee(deliveryConfig?.fee ?? 0);
+      } catch (e) {
+        setDeliveryFee(0);
+      }
 
       // Start progress simulation
       const progressInterval = setInterval(() => {
