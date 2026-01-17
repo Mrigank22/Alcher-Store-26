@@ -75,6 +75,7 @@ export interface Config {
     feedback: Feedback;
     reviews: Review;
     subscribers: Subscriber;
+    'delivery-config': DeliveryConfig;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +91,7 @@ export interface Config {
     feedback: FeedbackSelect<false> | FeedbackSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
+    'delivery-config': DeliveryConfigSelect<false> | DeliveryConfigSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -299,6 +301,7 @@ export interface Order {
     email?: string | null;
     addressLine1: string;
     addressLine2?: string | null;
+    district: string;
     city: string;
     state: string;
     pincode: string;
@@ -379,6 +382,17 @@ export interface Subscriber {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery-config".
+ */
+export interface DeliveryConfig {
+  id: string;
+  label: string;
+  deliveryFee: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -432,6 +446,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'subscribers';
         value: string | Subscriber;
+      } | null)
+    | ({
+        relationTo: 'delivery-config';
+        value: string | DeliveryConfig;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -618,6 +636,7 @@ export interface OrdersSelect<T extends boolean = true> {
         email?: T;
         addressLine1?: T;
         addressLine2?: T;
+        district?: T;
         city?: T;
         state?: T;
         pincode?: T;
@@ -663,6 +682,16 @@ export interface SubscribersSelect<T extends boolean = true> {
   name?: T;
   email?: T;
   isSubscribed?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery-config_select".
+ */
+export interface DeliveryConfigSelect<T extends boolean = true> {
+  label?: T;
+  deliveryFee?: T;
   updatedAt?: T;
   createdAt?: T;
 }

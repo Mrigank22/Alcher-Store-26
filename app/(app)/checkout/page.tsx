@@ -483,7 +483,7 @@ function CheckoutContent() {
                       <span className="font-medium">₹{shippingCost.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">GST (18%)</span>
+                      <span className="text-gray-600">GST (0%)</span>
                       <span className="font-medium">₹{tax.toFixed(2)}</span>
                     </div>
                     <div className="border-t pt-4 flex justify-between text-lg font-bold">

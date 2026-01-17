@@ -15,6 +15,7 @@ import { Orders } from './collections/Orders'
 import { Feedback } from './collections/Feedback'
 import { Reviews } from './collections/Reviews'
 import { Subscribers } from './collections/Subscribers'
+import { DeliveryConfig } from './collections/DeliveryConfig'
 
 
 
@@ -36,7 +37,8 @@ export default buildConfig({
     Orders,
     Feedback,
     Reviews,
-    Subscribers
+    Subscribers,
+    DeliveryConfig
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
