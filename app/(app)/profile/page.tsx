@@ -294,7 +294,7 @@ export default function ProfilePage() {
               <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
                 <p className="text-xl text-gray-600 mb-4">No orders yet</p>
                 <Link
-                  href="/products"
+                  href="/"
                   className="inline-block bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors"
                 >
                   Start Shopping
