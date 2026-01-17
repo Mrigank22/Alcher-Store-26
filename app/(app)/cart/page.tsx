@@ -27,7 +27,7 @@ export default async function CartPage() {
   const cart = await getCart(email);
   const h = await headers();
   const host = h.get("host") ?? "";
-  let deliveryFee = 1;
+  let deliveryFee = 100;
   const subtotal = cart.total_price;
   const total = subtotal + deliveryFee;
   return (

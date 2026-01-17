@@ -46,6 +46,7 @@ export const Orders: CollectionConfig = {
         },
         { name: 'productName', type: 'text', required: true },
         { name: 'productImage', type: 'text', required: true },
+        { name: 'productType', type: 'text' },
         { name: 'quantity', type: 'number', min: 1, required: true },
         { name: 'size', type: 'text' },
         { name: 'colour', type: 'text' },
