@@ -18,6 +18,10 @@ const OrderItemSchema = new Schema({
     type: String,
     required: true,
   },
+  productType: {
+    type: String,
+    default: null,
+  },
   quantity: {
     type: Number,
     required: true,
