@@ -144,6 +144,7 @@ export async function POST(req: NextRequest) {
         product: item.product._id,
         productName: item.product.name,
         productImage: imageUrl,
+        productType: item.product.productType,
         quantity: item.quantity,
         size: item.size,
         colour: item.colour,
