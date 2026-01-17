@@ -207,7 +207,7 @@ export interface Product {
   hasColor?: boolean | null;
   variants?:
     | {
-        size?: ('S' | 'M' | 'L' | 'XL') | null;
+        size?: ('XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | '3XL') | null;
         color?: string | null;
         stock?: number | null;
         id?: string | null;

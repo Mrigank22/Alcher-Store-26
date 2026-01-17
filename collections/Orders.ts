@@ -111,6 +111,7 @@ export const Orders: CollectionConfig = {
         { name: 'email', type: 'text' },
         { name: 'addressLine1', type: 'text', required: true },
         { name: 'addressLine2', type: 'text' },
+        { name: 'district', type: 'text', required: true },
         { name: 'city', type: 'text', required: true },
         { name: 'state', type: 'text', required: true },
         { name: 'pincode', type: 'text', required: true },

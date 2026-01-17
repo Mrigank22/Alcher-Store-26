@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
       !shippingAddress.name ||
       !shippingAddress.phone ||
       !shippingAddress.addressLine1 ||
+      !shippingAddress.district ||
       !shippingAddress.city ||
       !shippingAddress.state ||
       !shippingAddress.pincode
@@ -155,9 +156,14 @@ export async function POST(req: NextRequest) {
       (sum: number, item: any) => sum + item.subtotal,
       0
     );
-    
-    // You can add logic for shipping and tax calculation
-    const shippingCost = 0; // Free shipping for all orders
+
+    // Calculate shipping cost from product deliveryFee
+    let shippingCost = 0;
+    for (const item of cart.items) {
+      const product = await Product.findById(item.product._id);
+      shippingCost += (product?.deliveryFee ?? 0) * item.quantity;
+    }
+
     const tax = Math.round(subtotal * 0.18); // 18% GST
     const totalAmount = subtotal + shippingCost + tax;
 

@@ -27,6 +27,7 @@ interface ShippingAddress {
   phone: string;
   addressLine1: string;
   addressLine2: string;
+  district: string;
   city: string;
   state: string;
   pincode: string;
@@ -52,6 +53,7 @@ function CheckoutContent() {
     phone: "",
     addressLine1: "",
     addressLine2: "",
+    district: "",
     city: "",
     state: "",
     pincode: "",
@@ -142,6 +144,7 @@ function CheckoutContent() {
         !shippingAddress.name ||
         !shippingAddress.phone ||
         !shippingAddress.addressLine1 ||
+        !shippingAddress.district ||
         !shippingAddress.city ||
         !shippingAddress.state ||
         !shippingAddress.pincode
@@ -411,9 +414,9 @@ function CheckoutContent() {
                           </label>
                           <input
                               type="text"
-                              name="city"
+                              name="district"
                               placeholder=""
-                              value={shippingAddress.city}
+                              value={shippingAddress.district}
                               onChange={handleInputChange}
                               className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                               required
