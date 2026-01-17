@@ -425,9 +425,9 @@ export default function ProfilePage() {
                               CONTACT OUR TEAM
                             </p>
                             <div className="space-y-1 text-sm text-gray-700">
-                              <p>Call Us: +91 9876543210</p>
-                              <p>WhatsApp: +91 9876543210</p>
-                              <p>Mail: something.mail@domain.com</p>
+                              <p>Call Us: +91 70606 33995,+91 93540 82437</p>
+                              <p>WhatsApp: +91 70606 33995,+91 93540 82437</p>
+                              <p>Mail: creatives@alcheringa.co.in</p>
                             </div>
                           </div>
 

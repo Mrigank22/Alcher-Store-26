@@ -110,7 +110,8 @@ export default function Home() {
                 <Image src="/dialogue-box.png" alt="Dialogue" fill className="object-contain" />
                 <div className="absolute inset-0 flex items-center justify-center -mt-2 sm:-mt-3">
                   <h3 className="font-gotham font-black text-[#052e16] text-xs sm:text-sm md:text-base lg:text-lg uppercase tracking-[0.06em]">
-                    Order Your Merch Today
+                    PRE-ORDER IS OPEN!
+                    Delivery Starts from 28th Jan.
                   </h3>
                 </div>
               </div>
@@ -134,11 +135,11 @@ export default function Home() {
           <img src="/image518.png" alt="" 
           className="absolute
           top-[100px]
-          left-[920px]"/>
+          right-0"/>
           <img src="/image519.png" alt="" 
           className="absolute
           top-[250px]
-          left-[705px]"/>
+          right-0"/>
            <img src="/image520.png" alt="" 
           className="absolute
           top-[150px]
