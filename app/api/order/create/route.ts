@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { shippingAddress, notes = "", isDirect = false } = body;
+    const { shippingAddress, notes = "", isDirect = false, deliveryFee } = body;
 
     // Validate shipping address
     if (
@@ -158,15 +158,8 @@ export async function POST(req: NextRequest) {
       0
     );
 
-    // Fetch delivery fee from DeliveryConfig
-    let shippingCost = 0;
-    try {
-      const host = req.headers.get("host") ?? "";
-      const deliveryConfig = await getDeliveryConfig(host);
-      shippingCost = deliveryConfig?.fee ?? 0;
-    } catch (e) {
-      shippingCost = 0;
-    }
+    // Set delivery fee from checkout (default to 1 if not provided)
+    const shippingCost = typeof deliveryFee === "number" ? deliveryFee : 1;
 
     const tax = Math.round(subtotal * 0.18); // 18% GST
     const totalAmount = subtotal + shippingCost + tax;
