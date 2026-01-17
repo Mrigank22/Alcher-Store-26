@@ -5,6 +5,7 @@ import Order from "@/models/Order";
 import Cart from "@/models/Cart";
 import TempCart from "@/models/TempCart";
 import Product from "@/models/Product";
+import { getDeliveryConfig } from "@/lib/getDeliveryConfig";
 import Media from "@/models/Media";
 
 /**
@@ -157,11 +158,14 @@ export async function POST(req: NextRequest) {
       0
     );
 
-    // Calculate shipping cost from product deliveryFee
+    // Fetch delivery fee from DeliveryConfig
     let shippingCost = 0;
-    for (const item of cart.items) {
-      const product = await Product.findById(item.product._id);
-      shippingCost += (product?.deliveryFee ?? 0) * item.quantity;
+    try {
+      const host = req.headers.get("host") ?? "";
+      const deliveryConfig = await getDeliveryConfig(host);
+      shippingCost = deliveryConfig?.fee ?? 0;
+    } catch (e) {
+      shippingCost = 0;
     }
 
     const tax = Math.round(subtotal * 0.18); // 18% GST

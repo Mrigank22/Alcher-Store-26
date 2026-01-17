@@ -47,12 +47,6 @@ const productSchema = new mongoose.Schema(
       min: 0,
     },
 
-    deliveryFee: {
-      type: Number,
-      required: false,
-      min: 0,
-      default: 0,
-    },
 
     description: {
       type: String,
