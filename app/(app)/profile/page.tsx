@@ -54,6 +54,10 @@ export default function ProfilePage() {
   const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(null);
   const [userPhone, setUserPhone] = useState<string | null>(null);
   const [userImage, setUserImage] = useState<string | null>(null);
+  const [trackingModalOpen, setTrackingModalOpen] = useState(false);
+  const [selectedOrderForTracking, setSelectedOrderForTracking] = useState<Order | null>(null);
+  const [trackingData, setTrackingData] = useState<any>(null);
+  const [loadingTracking, setLoadingTracking] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -151,6 +155,35 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: "/login" });
+  };
+
+  const openTrackingModal = async (order: Order) => {
+    setSelectedOrderForTracking(order);
+    setTrackingModalOpen(true);
+    setLoadingTracking(true);
+    
+    try {
+      // Fetch the latest order status
+      const response = await fetch(`/api/orders?orderId=${order.orderId}`);
+      const result = await response.json();
+      
+      if (result.success && result.data && result.data.length > 0) {
+        setTrackingData(result.data[0]);
+      } else {
+        setTrackingData(order);
+      }
+    } catch (error) {
+      console.error("Error fetching tracking data:", error);
+      setTrackingData(order);
+    } finally {
+      setLoadingTracking(false);
+    }
+  };
+
+  const closeTrackingModal = () => {
+    setTrackingModalOpen(false);
+    setSelectedOrderForTracking(null);
+    setTrackingData(null);
   };
 
   if (loading) {
@@ -385,20 +418,11 @@ export default function ProfilePage() {
                           <p className="text-sm text-gray-600">
                             Tracking ID: {order.trackingId || "XXXXXXXXXXXX"}
                           </p>
-                          <p className="text-sm text-gray-600">
-                            Expected delivery by{" "}
-                            {order.expectedDelivery ||
-                              new Date(
-                                new Date(order.orderDate || order.createdAt || Date.now()).getTime() +
-                                  7 * 24 * 60 * 60 * 1000
-                              ).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              })}
-                          </p>
                         </div>
-                        <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
+                        <button 
+                          onClick={() => openTrackingModal(order)}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                        >
                           Track Order
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -535,6 +559,223 @@ export default function ProfilePage() {
         </div>
         </div>
       </div>
+
+      {/* Tracking Modal */}
+      {trackingModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={closeTrackingModal}>
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="bg-emerald-600 text-white px-6 py-4 rounded-t-2xl flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Track Order</h2>
+              <button onClick={closeTrackingModal} className="text-white hover:text-gray-200">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              {loadingTracking ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+                </div>
+              ) : trackingData ? (
+                <div className="space-y-6">
+                  {/* Order ID and Status */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">Order #{trackingData.orderId}</h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Placed on {new Date(trackingData.orderDate || trackingData.createdAt || Date.now()).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                        trackingData.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                        trackingData.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                        trackingData.status === 'processing' || trackingData.status === 'confirmed' ? 'bg-yellow-100 text-yellow-800' :
+                        trackingData.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {trackingData.status.charAt(0).toUpperCase() + trackingData.status.slice(1)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      Tracking ID: {trackingData.trackingId || "XXXXXXXXXXXX"}
+                    </div>
+                  </div>
+
+                  {/* Order Status Timeline */}
+                  <div>
+                    <h4 className="font-bold text-gray-900 mb-4">Order Status</h4>
+                    <div className="space-y-4">
+                      {/* Pending */}
+                      <div className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            ['pending', 'confirmed', 'processing', 'shipped', 'delivered'].includes(trackingData.status || trackingData.orderStatus)
+                              ? 'bg-emerald-600' : 'bg-gray-300'
+                          }`}>
+                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <div className="w-0.5 h-12 bg-gray-300"></div>
+                        </div>
+                        <div className="flex-1 pb-8">
+                          <h5 className="font-semibold text-gray-900">Order Placed</h5>
+                          <p className="text-sm text-gray-600">Your order has been received</p>
+                        </div>
+                      </div>
+
+                      {/* Confirmed */}
+                      <div className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            ['confirmed', 'processing', 'shipped', 'delivered'].includes(trackingData.status || trackingData.orderStatus)
+                              ? 'bg-emerald-600' : 'bg-gray-300'
+                          }`}>
+                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <div className="w-0.5 h-12 bg-gray-300"></div>
+                        </div>
+                        <div className="flex-1 pb-8">
+                          <h5 className="font-semibold text-gray-900">Order Confirmed</h5>
+                          <p className="text-sm text-gray-600">We've confirmed your order</p>
+                        </div>
+                      </div>
+
+                      {/* Processing */}
+                      <div className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            ['processing', 'shipped', 'delivered'].includes(trackingData.status || trackingData.orderStatus)
+                              ? 'bg-emerald-600' : 'bg-gray-300'
+                          }`}>
+                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <div className="w-0.5 h-12 bg-gray-300"></div>
+                        </div>
+                        <div className="flex-1 pb-8">
+                          <h5 className="font-semibold text-gray-900">Processing</h5>
+                          <p className="text-sm text-gray-600">Your order is being prepared</p>
+                        </div>
+                      </div>
+
+                      {/* Shipped */}
+                      <div className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            ['shipped', 'delivered'].includes(trackingData.status || trackingData.orderStatus)
+                              ? 'bg-emerald-600' : 'bg-gray-300'
+                          }`}>
+                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <div className="w-0.5 h-12 bg-gray-300"></div>
+                        </div>
+                        <div className="flex-1 pb-8">
+                          <h5 className="font-semibold text-gray-900">Shipped</h5>
+                          <p className="text-sm text-gray-600">Your order is on the way</p>
+                        </div>
+                      </div>
+
+                      {/* Delivered */}
+                      <div className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            trackingData.status === 'delivered' || trackingData.orderStatus === 'delivered'
+                              ? 'bg-emerald-600' : 'bg-gray-300'
+                          }`}>
+                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <h5 className="font-semibold text-gray-900">Delivered</h5>
+                          <p className="text-sm text-gray-600">
+                            {trackingData.deliveryDate ? 
+                              `Delivered on ${new Date(trackingData.deliveryDate).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              })}` : 
+                              'Your order will be delivered soon'
+                            }
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Shipping Address */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">Shipping Address</h4>
+                    <div className="text-sm text-gray-700">
+                      <p className="font-medium">{trackingData.shippingAddress?.name}</p>
+                      <p>{trackingData.shippingAddress?.addressLine1}</p>
+                      {trackingData.shippingAddress?.addressLine2 && <p>{trackingData.shippingAddress.addressLine2}</p>}
+                      <p>{trackingData.shippingAddress?.city}, {trackingData.shippingAddress?.state} {trackingData.shippingAddress?.pincode}</p>
+                      <p className="mt-2">Phone: {trackingData.shippingAddress?.phone}</p>
+                    </div>
+                  </div>
+
+                  {/* Order Items */}
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-3">Order Items</h4>
+                    <div className="space-y-3">
+                      {trackingData.items?.map((item: any, index: number) => (
+                        <div key={index} className="flex gap-3 bg-gray-50 rounded-lg p-3">
+                          <div className="w-16 h-16 bg-gray-300 rounded-lg flex-shrink-0 overflow-hidden">
+                            {item.productImage ? (
+                              <Image
+                                src={item.productImage}
+                                alt={item.productName}
+                                width={64}
+                                height={64}
+                                className="w-full h-full object-cover"
+                                unoptimized
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">
+                                No Image
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <h5 className="font-semibold text-sm text-gray-900">{item.productName}</h5>
+                            <p className="text-xs text-gray-600 mt-1">
+                              {item.size && `Size: ${item.size}`} {item.colour && `• Color: ${item.colour}`}
+                            </p>
+                            <p className="text-xs text-gray-600">Quantity: {item.quantity}</p>
+                            <p className="text-sm font-semibold text-gray-900 mt-1">₹{item.subtotal.toFixed(2)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-center text-gray-600 py-8">No tracking data available</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
