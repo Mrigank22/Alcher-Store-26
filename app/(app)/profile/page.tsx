@@ -31,6 +31,8 @@ interface Order {
   shippingAddress: {
     name: string;
     addressLine1?: string;
+    addressLine2?: string;
+    district?: string;
     city: string;
     state: string;
     pincode?: string;
@@ -362,7 +364,7 @@ export default function ProfilePage() {
                           <div className="text-sm text-gray-700">
                             <p>{order.shippingAddress.addressLine1 || `Address Line 1`}</p>
                             <p>
-                              {order.shippingAddress.city}, {order.shippingAddress.state}
+                              {order.shippingAddress.district && `${order.shippingAddress.district}, `}{order.shippingAddress.city}, {order.shippingAddress.state}
                             </p>
                             <p>
                               India, {order.shippingAddress.pincode || "248001"}
@@ -478,7 +480,7 @@ export default function ProfilePage() {
                               <div className="flex justify-between text-sm">
                                 <span className="text-gray-700">Subtotal</span>
                                 <span className="text-gray-900 font-medium">
-                                  ₹{(order.subtotalAmount || order.totalAmount - (order.shippingCost || order.deliveryCharge || 0) - (order.tax || 0)).toFixed(2)}
+                                  ₹{(order.subtotalAmount || order.totalAmount - (order.shippingCost || 0) - (order.tax || 0)).toFixed(2)}
                                 </span>
                               </div>
                               <div className="flex justify-between text-sm">
@@ -486,7 +488,7 @@ export default function ProfilePage() {
                                   Delivery Charges
                                 </span>
                                 <span className="text-gray-900 font-medium">
-                                  ₹{(order.shippingCost || order.deliveryCharge || 0).toFixed(2)}
+                                  ₹{(order.shippingCost || 0).toFixed(2)}
                                 </span>
                               </div>
                               {order.tax && order.tax > 0 && (
@@ -729,7 +731,7 @@ export default function ProfilePage() {
                       <p className="font-medium">{trackingData.shippingAddress?.name}</p>
                       <p>{trackingData.shippingAddress?.addressLine1}</p>
                       {trackingData.shippingAddress?.addressLine2 && <p>{trackingData.shippingAddress.addressLine2}</p>}
-                      <p>{trackingData.shippingAddress?.city}, {trackingData.shippingAddress?.state} {trackingData.shippingAddress?.pincode}</p>
+                      <p>{trackingData.shippingAddress?.district && `${trackingData.shippingAddress.district}, `}{trackingData.shippingAddress?.city}, {trackingData.shippingAddress?.state} {trackingData.shippingAddress?.pincode}</p>
                       <p className="mt-2">Phone: {trackingData.shippingAddress?.phone}</p>
                     </div>
                   </div>

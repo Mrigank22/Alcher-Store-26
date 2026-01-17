@@ -98,8 +98,8 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
     .font("Helvetica")
     .fontSize(9)
     .text(fullAddress || "Address", 20, sectionTop + 35, { width: 180 })
-    .text(order.shippingAddress?.city && order.shippingAddress?.state 
-      ? `${order.shippingAddress.city}, ${order.shippingAddress.state}` 
+    .text(order.shippingAddress?.district && order.shippingAddress?.city && order.shippingAddress?.state 
+      ? `${order.shippingAddress.district}, ${order.shippingAddress.city}, ${order.shippingAddress.state}` 
       : "", 20, sectionTop + 48, { width: 180 });
 
   // Payment Details (Middle)
@@ -184,8 +184,8 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
     yPos += 28;
   });
 
-  // Delivery Charges if shipping > 0
-  if (order.shipping > 0) {
+  // Delivery Charges if shippingCost > 0
+  if (order.shippingCost > 0) {
     yPos += 5;
     doc
       .font("Helvetica-Bold")
@@ -193,7 +193,7 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
       .fillColor("#000000")
       .text("Delivery Charges", 27, yPos);
     
-    doc.text(`Rs${order.shipping}`, 485, yPos, { align: "right", width: 90 });
+    doc.text(`Rs${order.shippingCost}`, 485, yPos, { align: "right", width: 90 });
     
     yPos += 28;
   }

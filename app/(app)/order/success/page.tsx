@@ -229,13 +229,14 @@ function OrderSuccessContent() {
                   <div>
                     <p className="text-gray-500 text-xs">City, State, Pincode</p>
                     <p className="text-gray-800 font-medium">
-                      {orderDetails.shippingAddress.city}, {orderDetails.shippingAddress.state},{" "}
+                      {orderDetails.shippingAddress.district && `${orderDetails.shippingAddress.district}, `}{orderDetails.shippingAddress.city}, {orderDetails.shippingAddress.state},{" "}
                       {orderDetails.shippingAddress.pincode}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
+
 
             {/* Order Items */}
             <div className="px-6 pb-6 space-y-3">
@@ -290,6 +291,12 @@ function OrderSuccessContent() {
                     </div>
                   </div>
               ))}
+
+              {/* Delivery Charge */}
+              <div className="flex justify-between items-center border-t pt-4 mt-4">
+                <span className="text-gray-700 font-medium">Delivery Charges</span>
+                <span className="text-gray-900 font-bold">₹{orderDetails.shippingCost || 0}</span>
+              </div>
             </div>
 
             {/* Bottom Buttons */}

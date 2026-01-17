@@ -23,6 +23,17 @@ export const Products: CollectionConfig = {
       required: true,
     },
     {
+      name: 'deliveryFee',
+      label: 'Delivery Fee',
+      type: 'number',
+      required: false,
+      defaultValue: 0,
+      min: 0,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'description',
       type: 'textarea',
     },
