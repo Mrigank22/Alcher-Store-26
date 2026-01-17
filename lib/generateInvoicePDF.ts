@@ -84,18 +84,23 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
     .fillColor("#000000")
     .text("Invoice To:", 20, sectionTop);
   
+  const customerName = order.user?.name || order.user?.username || order.customerName || "Recipient's Name";
+  const addressLine1 = order.shippingAddress?.addressLine1 || order.shippingAddress?.street || "";
+  const addressLine2 = order.shippingAddress?.addressLine2 || "";
+  const fullAddress = [addressLine1, addressLine2].filter(Boolean).join(", ");
+  
   doc
     .font("Helvetica-Bold")
     .fontSize(9)
-    .text(order.customerName || "Recipient's Name", 20, sectionTop + 20, { width: 180 });
+    .text(customerName, 20, sectionTop + 20, { width: 180 });
   
   doc
     .font("Helvetica")
     .fontSize(9)
-    .text(order.shippingAddress.street || "Address Line 1", 20, sectionTop + 35, { width: 180 })
-    .text(order.shippingAddress.city && order.shippingAddress.state 
+    .text(fullAddress || "Address", 20, sectionTop + 35, { width: 180 })
+    .text(order.shippingAddress?.city && order.shippingAddress?.state 
       ? `${order.shippingAddress.city}, ${order.shippingAddress.state}` 
-      : "Address Line 2", 20, sectionTop + 48, { width: 180 });
+      : "", 20, sectionTop + 48, { width: 180 });
 
   // Payment Details (Middle)
   doc
@@ -106,15 +111,15 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
   doc
     .font("Helvetica-Bold")
     .fontSize(9)
-    .text(order.paymentMode || order.payment?.mode || "Payment Mode", 223, sectionTop + 20, { width: 170 });
+    .text(order.paymentMethod || "SBI", 223, sectionTop + 20, { width: 170 });
   
   doc
     .font("Helvetica")
     .fontSize(9)
-    .text(order.transactionId || order.payment?.transactionId || "Transaction ID", 223, sectionTop + 35, { width: 170 });
+    .text(order.sbiTransactionId || order.paymentDetails?.bankRefNo || "N/A", 223, sectionTop + 35, { width: 170 });
   
-  if (order.payment?.additionalInfo) {
-    doc.text(order.payment.additionalInfo, 223, sectionTop + 48, { width: 170 });
+  if (order.paymentDetails?.atrn) {
+    doc.text(`ATRN: ${order.paymentDetails.atrn}`, 223, sectionTop + 48, { width: 170 });
   }
 
   // Order ID and date (Right)
