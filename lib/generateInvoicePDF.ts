@@ -165,14 +165,14 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
       .fontSize(10)
       .fillColor("#000000")
       .text(item.productName, 27, yPos, { width: 240 });
-    
+
     yPos += 13;
     doc
       .font("Helvetica")
       .fontSize(8)
       .fillColor("#666666")
-      .text(`${item.productName}, Size ${item.size}`, 27, yPos, { width: 240 });
-    
+      .text(`${item.productType || ''}${item.size ? `, Size ${item.size}` : ''}`, 27, yPos, { width: 240 });
+
     doc
       .font("Helvetica")
       .fontSize(10)
@@ -180,7 +180,7 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
       .text(`Rs${item.price}`, 285, yPos - 13, { width: 80, align: "center" })
       .text(item.quantity.toString(), 375, yPos - 13, { width: 40, align: "center" })
       .text(`Rs${item.subtotal}`, 485, yPos - 13, { align: "right", width: 90 });
-    
+
     yPos += 28;
   });
 
@@ -207,13 +207,14 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
     .lineTo(575, yPos)
     .stroke();
 
-  // Subtotal
+  // Subtotal (including delivery charge)
   yPos += 20;
+  const subtotalWithDelivery = (order.subtotal || 0) + (order.shippingCost || 0);
   doc
     .font("Helvetica-Bold")
     .fontSize(10)
     .text("SUB TOTAL", 395, yPos)
-    .text(`Rs${order.subtotal}`, 485, yPos, { align: "right", width: 90 });
+    .text(`Rs${subtotalWithDelivery}`, 485, yPos, { align: "right", width: 90 });
 
   // GST/TAX
   yPos += 20;
