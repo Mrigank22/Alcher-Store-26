@@ -1,5 +1,3 @@
-import "./globals.css";
-import './components/fonts.css'
 import Script from "next/script";
 import { Metadata } from 'next'
 
