@@ -106,13 +106,21 @@ export default function Home() {
 
             {/* Dialogue box — slightly up & closer to clown */}
             <div className="relative z-50 -translate-y-4 sm:-translate-y-6 -mr-2 sm:mr-0">
-              <div className="relative w-[250px] sm:w-[300px] md:w-[410px] lg:w-[1000px] h-[70px] sm:h-[90px] md:h-[110px] lg:h-[130px]">
+              <div className="relative w-[250px] sm:w-[300px] md:w-[410px] lg:w-[500px] h-[70px] sm:h-[90px] md:h-[110px] lg:h-[130px]">
                 <Image src="/dialogue-box.png" alt="Dialogue" fill className="object-contain" />
-                <div className="absolute inset-0 flex items-center justify-center -mt-2 sm:-mt-3">
-                  <h3 className="font-gotham font-black text-[#052e16] text-xs sm:text-sm md:text-base lg:text-lg uppercase tracking-[0.06em]">
-                    PRE-ORDER IS OPEN!
-                    Delivery Starts from 28th Jan.
-                  </h3>
+                <div className="absolute inset-0 flex items-center justify-center  px-4 sm:px-6 md:px-8 -mt-2 sm:-mt-3">
+                 <h3
+  className="
+    font-gotham font-black text-[#052e16] uppercase text-center
+    text-[10px] sm:text-xs md:text-sm lg:text-base
+    leading-[1.2] sm:leading-[1.25] md:leading-[1.3]
+    tracking-[0.08em] sm:tracking-[0.07em] md:tracking-[0.06em]
+  "
+>
+  <span className="block">PRE-ORDER IS OPEN!</span>
+  <span className="block mt-1 sm:mt-2">DELIVERY STARTS FROM 28TH JAN.</span>
+</h3>
+
                 </div>
               </div>
             </div>
