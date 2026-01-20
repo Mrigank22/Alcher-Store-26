@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
     // Set delivery fee from checkout (default to 1 if not provided)
     const shippingCost = typeof deliveryFee === "number" ? deliveryFee : 1;
 
-    const tax = Math.round(subtotal); // 18% GST
+    const tax = Math.round(subtotal * 0.00); // 18% GST
     const totalAmount = subtotal + shippingCost + tax;
 
     // Create order
