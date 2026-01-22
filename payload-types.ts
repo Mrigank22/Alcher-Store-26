@@ -267,6 +267,7 @@ export interface Order {
         product: string | Product;
         productName: string;
         productImage: string;
+        productType?: string | null;
         quantity: number;
         size?: string | null;
         colour?: string | null;
@@ -594,6 +595,7 @@ export interface OrdersSelect<T extends boolean = true> {
         product?: T;
         productName?: T;
         productImage?: T;
+        productType?: T;
         quantity?: T;
         size?: T;
         colour?: T;
