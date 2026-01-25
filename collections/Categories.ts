@@ -5,6 +5,7 @@ export const Categories: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
   },
+  dbName: 'productcategories', // Match Mongoose collection name
   fields: [
     {
       name: 'name',
