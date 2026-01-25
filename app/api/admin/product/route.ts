@@ -38,6 +38,12 @@ export async function GET() {
       .filter(Boolean),
   }));
 
+  console.log('Products with categories:', enrichedProducts.map(p => ({ 
+    name: p.name, 
+    categoryId: p.category?._id,
+    categoryName: p.category?.name 
+  })));
+
   return Response.json(enrichedProducts);
 }
 
@@ -60,6 +66,9 @@ export async function POST(req: Request) {
       name: body.name,
       price: Number(body.price),
       description: body.description ?? "",
+      productType: body.productType ?? "T-Shirt",
+
+      category: body.category ?? null, // Save category ObjectId
 
      images,                
       primaryImageIndex:
@@ -74,6 +83,8 @@ export async function POST(req: Request) {
         Array.isArray(body.variants) && body.variants.length > 0
           ? body.variants.map((v: any) => ({
               size: v.size ?? undefined,
+              variantName: v.variantName ?? undefined,
+              variantDescription: v.variantDescription ?? undefined,
               color: v.color ?? undefined,
               stock: Number(v.stock) || 0,
             }))
