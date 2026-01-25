@@ -81,7 +81,10 @@ export async function GET(req: Request) {
   }
 
   const cart:any = await Cart.findOne({ user_email: email })
-    .populate("items.product")
+    .populate({
+      path: "items.product",
+      populate: { path: "category" }
+    })
     .lean();
 
   if (!cart) {
@@ -125,7 +128,7 @@ export async function GET(req: Request) {
 /* ADD TO CART  */
 export async function POST(req: Request) {
   await connectDB();
-  const { email, product, size, colour, quantity = 1 } = await req.json();
+  const { email, product, size, variantName, colour, quantity = 1 } = await req.json();
 
   if (!email || !product) {
     return NextResponse.json(
@@ -134,7 +137,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const productDoc = await Product.findById(product);
+  const productDoc = await Product.findById(product).populate('category');
   if (!productDoc) {
     return NextResponse.json(
       { error: "Product not found" },
@@ -142,10 +145,19 @@ export async function POST(req: Request) {
     );
   }
 
+  const isMerch = productDoc.category?.name === 'Merch';
+
   // Validate variant selection for products with size/color
-  if (productDoc.hasSize && !size) {
+  if (isMerch && productDoc.hasSize && !size) {
     return NextResponse.json(
       { error: "Please select a size" },
+      { status: 400 }
+    );
+  }
+
+  if (!isMerch && !variantName) {
+    return NextResponse.json(
+      { error: "Please select a variant" },
       { status: 400 }
     );
   }
@@ -160,7 +172,7 @@ export async function POST(req: Request) {
   // Validate stock for selected variant
   const selectedVariant = productDoc.variants.find(
     (v: any) => 
-      (!productDoc.hasSize || v.size === size) &&
+      (isMerch ? (!productDoc.hasSize || v.size === size) : v.variantName === variantName) &&
       (!productDoc.hasColor || v.color === colour)
   );
 
@@ -183,6 +195,7 @@ export async function POST(req: Request) {
   const existingItem = cart.items.find((i: any) => {
   if (i.product.toString() !== product) return false;
   if (size && i.size !== size) return false;
+  if (variantName && i.variantName !== variantName) return false;
   if (colour && i.colour !== colour) return false;
   return true;
 });
@@ -194,6 +207,7 @@ export async function POST(req: Request) {
     cart.items.push({
       product,
       size,
+      variantName,
       colour,
       quantity,
       price: productDoc.price,
@@ -211,7 +225,7 @@ export async function PATCH(req: Request) {
   await connectDB();
 
 
-  const { email, product, size, colour, quantity } =
+  const { email, product, size, variantName, colour, quantity } =
     await req.json();
 
   if (!email || !product || quantity < 1) {
@@ -239,6 +253,7 @@ export async function PATCH(req: Request) {
     const item = cart.items.find((i: any) => {
     if (i.product.toString() !== product) return false;
     if (size && i.size !== size) return false;
+    if (variantName && i.variantName !== variantName) return false;
     if (colour && i.colour !== colour) return false;
     return true;
   });
@@ -250,7 +265,7 @@ export async function PATCH(req: Request) {
     );
   }
   
-  const productDoc = await Product.findById(product);
+  const productDoc = await Product.findById(product).populate('category');
   if (!productDoc) {
     return NextResponse.json(
       { error: "Product not found" },
@@ -258,9 +273,10 @@ export async function PATCH(req: Request) {
     );
   }
 
+  const isMerch = productDoc.category?.name === 'Merch';
   const selectedVariant = productDoc.variants.find(
     (v: any) =>
-      (!productDoc.hasSize || v.size === size) &&
+      (isMerch ? (!productDoc.hasSize || v.size === size) : v.variantName === variantName) &&
       (!productDoc.hasColor || v.color === colour)
   );
 
@@ -282,7 +298,7 @@ export async function PATCH(req: Request) {
 export async function DELETE(req: Request) {
   await connectDB();
 
-  const { email, product, size, colour } = await req.json();
+  const { email, product, size, variantName, colour } = await req.json();
 
   if (!email || !product) {
     return NextResponse.json(
@@ -302,6 +318,7 @@ export async function DELETE(req: Request) {
   cart.items = cart.items.filter((i: any) => {
     if (i.product.toString() !== product) return true;
     if (size && i.size !== size) return true;
+    if (variantName && i.variantName !== variantName) return true;
     if (colour && i.colour !== colour) return true;
     return false;
   });

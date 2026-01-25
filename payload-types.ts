@@ -202,12 +202,25 @@ export interface Product {
   description?: string | null;
   productType?: string | null;
   images: (string | Media)[];
-  category?: (string | Category)[] | null;
-  hasSize?: boolean | null;
-  hasColor?: boolean | null;
+  category: string | Category;
   variants?:
     | {
+        /**
+         * For Merch products
+         */
         size?: ('XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | '3XL') | null;
+        /**
+         * For combos and accessories
+         */
+        variantName?: ('Set 1' | 'Set 2' | 'Set 3' | 'Set 4' | 'Set 5') | null;
+        /**
+         * Describe what makes this variant unique
+         */
+        variantDescription?: string | null;
+        /**
+         * Images for this specific variant (for non-Merch categories)
+         */
+        images?: (string | Media)[] | null;
         color?: string | null;
         stock?: number | null;
         id?: string | null;
@@ -222,7 +235,18 @@ export interface Product {
  */
 export interface Category {
   id: string;
-  name: string;
+  name:
+    | 'Merch'
+    | 'Combo'
+    | 'Cards'
+    | 'Vinyl Stickers'
+    | 'PVC Stickers'
+    | 'Badges'
+    | 'Wrist Bands'
+    | 'Keychain'
+    | 'Poster A3'
+    | 'Poster A4'
+    | 'Tote Bag';
   field_required?: {
     size?: boolean | null;
     colour?: boolean | null;
@@ -270,6 +294,14 @@ export interface Order {
         productType?: string | null;
         quantity: number;
         size?: string | null;
+        /**
+         * For non-Merch categories: Set 1, Set 2, etc.
+         */
+        variantName?: string | null;
+        /**
+         * Category snapshot: Merch, Combo, Cards, etc.
+         */
+        category?: string | null;
         colour?: string | null;
         price: number;
         subtotal: number;
@@ -552,12 +584,13 @@ export interface ProductsSelect<T extends boolean = true> {
   productType?: T;
   images?: T;
   category?: T;
-  hasSize?: T;
-  hasColor?: T;
   variants?:
     | T
     | {
         size?: T;
+        variantName?: T;
+        variantDescription?: T;
+        images?: T;
         color?: T;
         stock?: T;
         id?: T;
@@ -598,6 +631,8 @@ export interface OrdersSelect<T extends boolean = true> {
         productType?: T;
         quantity?: T;
         size?: T;
+        variantName?: T;
+        category?: T;
         colour?: T;
         price?: T;
         subtotal?: T;

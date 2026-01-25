@@ -18,6 +18,8 @@ interface Order {
     price: number;
     subtotal: number;
     size?: string;
+    variantName?: string;
+    category?: string;
   }>;
   totalAmount: number;
   deliveryCharge?: number;
@@ -401,7 +403,10 @@ export default function ProfilePage() {
                                 {item.productName}
                               </h5>
                               <p className="text-xs text-gray-600 mt-1">
-                                {item.size || "Size: M"}
+                                {item.category === 'Merch' 
+                                  ? (item.size || "Size: M")
+                                  : (item.variantName || "Variant")
+                                }
                               </p>
                               <p className="text-xs text-gray-600">
                                 Quantity: {item.quantity}
@@ -469,7 +474,7 @@ export default function ProfilePage() {
                                   className="flex justify-between text-sm"
                                 >
                                   <span className="text-gray-700">
-                                    {item.productName} {item.size} x{item.quantity}
+                                    {item.productName} {item.category === 'Merch' ? item.size : item.variantName} x{item.quantity}
                                   </span>
                                   <span className="text-gray-900 font-medium">
                                     {item.subtotal.toFixed(2)}
@@ -761,7 +766,9 @@ export default function ProfilePage() {
                           <div className="flex-1">
                             <h5 className="font-semibold text-sm text-gray-900">{item.productName}</h5>
                             <p className="text-xs text-gray-600 mt-1">
-                              {item.size && `Size: ${item.size}`} {item.colour && `• Color: ${item.colour}`}
+                              {item.category === 'Merch' && item.size && `Size: ${item.size}`}
+                              {item.category !== 'Merch' && item.variantName && `Variant: ${item.variantName}`}
+                              {item.colour && ` • Color: ${item.colour}`}
                             </p>
                             <p className="text-xs text-gray-600">Quantity: {item.quantity}</p>
                             <p className="text-sm font-semibold text-gray-900 mt-1">₹{item.subtotal.toFixed(2)}</p>

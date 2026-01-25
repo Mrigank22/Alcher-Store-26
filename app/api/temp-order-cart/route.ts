@@ -81,7 +81,10 @@ export async function GET(req: Request) {
     if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     await connectDB();
-    const tempCart = await TempCart.findOne({ user_email: session.user.email }).populate("items.product");
+    const tempCart = await TempCart.findOne({ user_email: session.user.email }).populate({
+      path: "items.product",
+      populate: { path: "category" }
+    });
 
     return NextResponse.json(tempCart || { items: [] });
   } catch (error) {

@@ -3,15 +3,31 @@ import mongoose from "mongoose";
 /* ================= Variant Schema ================= */
 const variantSchema = new mongoose.Schema(
   {
+    // For merch products: S, M, L, XL, XXL
     size: {
       type: String,
       enum: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
       required: false,
     },
 
-    color: {
+    // For combos/other products: "Set 1", "Set 2", "Flawless", "Gambit", etc.
+    variantName: {
       type: String,
       required: false,
+    },
+
+    // Detailed contents for combo variants
+    variantDescription: {
+      type: String,
+      required: false,
+    },
+
+    // Images specific to this variant (for non-Merch categories)
+    images: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "Media",
+      required: false,
+      default: [],
     },
 
     stock: {
@@ -70,11 +86,8 @@ const productSchema = new mongoose.Schema(
 
     images: {
   type: [String],
-  required: true,
-  validate: {
-    validator: (arr: string[]) => arr.length > 0,
-    message: "At least one product image is required",
-  },
+  required: false,
+  default: [],
 },
 primaryImageIndex: {
   type: Number,

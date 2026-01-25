@@ -16,6 +16,7 @@ export type Product = {
   price: number;
   images: MediaImage[];
   primaryImageIndex?: number;
+  category?: { name: string };
 };
 
 type MerchBoxProps = {
@@ -48,7 +49,11 @@ export default function MerchBox({ showHeading = true }: MerchBoxProps) {
         setProgress(100);
 
         if (Array.isArray(data)) {
-          setProducts(data);
+          // Filter only Merch products
+          const merchProducts = data.filter(
+            (p: Product) => p.category?.name === "Merch"
+          );
+          setProducts(merchProducts);
         }
 
         // Small delay to show 100% before hiding

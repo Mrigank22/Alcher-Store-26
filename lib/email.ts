@@ -40,15 +40,22 @@ export async function sendOTPEmail(email: string, otp: string) {
 export async function sendOrderConfirmationEmail(order: any) {
   const { shippingAddress, orderId, orderDate, items, subtotal, shippingCost, tax, totalAmount, invoiceUrl } = order;
   
-  const itemsHTML = items.map((item: any) => `
+  const itemsHTML = items.map((item: any) => {
+    const isMerch = item.category === 'Merch';
+    const variantDisplay = isMerch 
+      ? (item.size || "N/A")
+      : (item.variantName || "N/A");
+    
+    return `
     <tr>
       <td style="padding: 10px; border-bottom: 1px solid #ddd;">${item.productName}</td>
-      <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: center;">${item.size || "N/A"}</td>
+      <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: center;">${variantDisplay}</td>
       <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: center;">${item.quantity}</td>
       <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">₹${item.price.toFixed(2)}</td>
       <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">₹${item.subtotal.toFixed(2)}</td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 
   const mailOptions = {
     from: process.env.EMAIL_USER,
@@ -112,7 +119,7 @@ export async function sendOrderConfirmationEmail(order: any) {
               <thead>
                 <tr>
                   <th>Product</th>
-                  <th style="text-align: center;">Size</th>
+                  <th style="text-align: center;">Size/Variant</th>
                   <th style="text-align: center;">Qty</th>
                   <th style="text-align: right;">Price</th>
                   <th style="text-align: right;">Subtotal</th>

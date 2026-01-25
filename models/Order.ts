@@ -31,6 +31,14 @@ const OrderItemSchema = new Schema({
     type: String,
     default: null,
   },
+  variantName: {
+    type: String,
+    default: null, // For non-Merch categories: Set 1, Set 2, etc.
+  },
+  category: {
+    type: String,
+    default: null, // Category name snapshot: Merch, Combo, Cards, etc.
+  },
   price: {
     type: Number,
     required: true, // Price at time of purchase

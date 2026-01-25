@@ -48,15 +48,9 @@ export const Products: CollectionConfig = {
       name: 'category',
       type: 'relationship',
       relationTo: 'categories',
-      hasMany: true,
-    },
-    {
-      name: 'hasSize',
-      type: 'checkbox',
-    },
-    {
-      name: 'hasColor',
-      type: 'checkbox',
+      required: true,
+      // Single category selection - will show as dropdown in admin panel
+      // Category defines size/color requirements, no need for hasSize/hasColor here
     },
     {
       name: 'variants', // Your variants array
@@ -66,6 +60,36 @@ export const Products: CollectionConfig = {
           name: 'size',
           type: 'select',
           options: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'],
+          admin: {
+            description: 'For Merch products',
+          },
+        },
+        {
+          name: 'variantName',
+          label: 'Variant Name',
+          type: 'select',
+          options: ['Set 1', 'Set 2', 'Set 3', 'Set 4', 'Set 5'],
+          admin: {
+            description: 'For combos and accessories',
+          },
+        },
+        {
+          name: 'variantDescription',
+          label: 'Variant Description',
+          type: 'textarea',
+          admin: {
+            description: 'Describe what makes this variant unique',
+          },
+        },
+        {
+          name: 'images',
+          label: 'Variant Images',
+          type: 'relationship',
+          relationTo: 'media',
+          hasMany: true,
+          admin: {
+            description: 'Images for this specific variant (for non-Merch categories)',
+          },
         },
         {
           name: 'color',
