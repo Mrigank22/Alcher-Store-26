@@ -15,8 +15,11 @@ import LoadingScreen from "@/components/LoadingScreen";
 
 type Variant = {
   size?: string;
+  variantName?: string;
+  variantDescription?: string;
   color?: string;
   stock: number;
+  images?: MediaImage[];
 };
 
 type MediaImage = {
@@ -37,6 +40,10 @@ interface Product {
   hasColor: boolean;
   variants: Variant[];
   productType?: string;
+  category?: {
+    _id: string;
+    name: string;
+  };
 }
 
 type Review = {
@@ -62,10 +69,12 @@ export default function ProductDetailPage() {
   const [progress, setProgress] = useState(0);
 
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
   const [buying, setBuying] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const [currentImages, setCurrentImages] = useState<MediaImage[]>([]);
   const [showSizeChart, setShowSizeChart] = useState(false);
 
   // Touch swipe state
@@ -98,10 +107,19 @@ export default function ProductDetailPage() {
 
       setProduct(data);
 
-      if (data.hasSize) {
+      // Initialize selection based on category
+      const isMerch = data.category?.name === "Merch";
+      
+      if (isMerch && data.hasSize) {
         const firstAvailable = data.variants.find((v) => v.size && v.stock > 0);
         if (firstAvailable?.size) {
           setSelectedSize(firstAvailable.size);
+        }
+      } else {
+        // For other categories, use variantName
+        const firstAvailable = data.variants.find((v) => v.variantName && v.stock > 0);
+        if (firstAvailable?.variantName) {
+          setSelectedVariant(firstAvailable.variantName);
         }
       }
 
@@ -136,8 +154,31 @@ export default function ProductDetailPage() {
   useEffect(() => {
     if (product?.images?.length) {
       setActiveImage(product.primaryImageIndex ?? 0);
+      setCurrentImages(product.images); // Initialize with product-level images
     }
   }, [product]);
+
+  // Update images when variant changes (for non-Merch categories)
+  useEffect(() => {
+    if (!product) return;
+    
+    const isMerch = product.category?.name === "Merch";
+    
+    if (!isMerch && selectedVariant) {
+      const variant = product.variants.find(v => v.variantName === selectedVariant);
+      if (variant?.images && variant.images.length > 0) {
+        setCurrentImages(variant.images);
+        setActiveImage(0); // Reset to first image
+      } else {
+        // Fallback to product-level images if variant has no images
+        setCurrentImages(product.images || []);
+        setActiveImage(0);
+      }
+    } else if (isMerch) {
+      // Merch always uses product-level images
+      setCurrentImages(product.images || []);
+    }
+  }, [selectedVariant, product]);
 
   /* ================= TOUCH SWIPE HANDLERS ================= */
 
@@ -160,12 +201,12 @@ export default function ProductDetailPage() {
     if (distance > 0) {
       // Swipe left - next image
       setActiveImage((prev) =>
-          prev === (product?.images.length || 1) - 1 ? 0 : prev + 1
+          prev === (currentImages?.length || 1) - 1 ? 0 : prev + 1
       );
     } else {
       // Swipe right - previous image
       setActiveImage((prev) =>
-          prev === 0 ? (product?.images.length || 1) - 1 : prev - 1
+          prev === 0 ? (currentImages?.length || 1) - 1 : prev - 1
       );
     }
 
@@ -200,13 +241,15 @@ export default function ProductDetailPage() {
   /* ================= STOCK LOGIC ================= */
 
   const totalStock = p.variants.reduce((sum, v) => sum + v.stock, 0);
+  const isMerch = p.category?.name === "Merch";
 
-  const selectedSizeStock = p.hasSize
+  const selectedSizeStock = isMerch && p.hasSize
       ? p.variants.find((v) => v.size === selectedSize)?.stock ?? 0
+      : !isMerch && selectedVariant
+      ? p.variants.find((v) => v.variantName === selectedVariant)?.stock ?? 0
       : totalStock;
 
-  const isOutOfStock =
-      totalStock === 0 || (p.hasSize && p.variants.every((v) => v.stock === 0));
+  const isOutOfStock = totalStock === 0;
 
   /* ================= SIZE CHART MAPPING ================= */
 
@@ -230,8 +273,15 @@ export default function ProductDetailPage() {
       return;
     }
 
-    if (p.hasSize && !selectedSize) {
+    const isMerch = p.category?.name === "Merch";
+    
+    if (isMerch && p.hasSize && !selectedSize) {
       alert("Please select a size");
+      return;
+    }
+    
+    if (!isMerch && !selectedVariant) {
+      alert("Please select a variant");
       return;
     }
 
@@ -246,6 +296,7 @@ export default function ProductDetailPage() {
           product: p._id,
           quantity,
           size: selectedSize || undefined,
+          variantName: selectedVariant || undefined,
           colour: null,
         }),
       });
@@ -274,8 +325,15 @@ export default function ProductDetailPage() {
       return;
     }
 
-    if (p.hasSize && !selectedSize) {
+    const isMerch = p.category?.name === "Merch";
+    
+    if (isMerch && p.hasSize && !selectedSize) {
       alert("Please select a size first");
+      return;
+    }
+    
+    if (!isMerch && !selectedVariant) {
+      alert("Please select a variant first");
       return;
     }
 
@@ -289,6 +347,7 @@ export default function ProductDetailPage() {
           productId: p.product_id,
           quantity,
           size: selectedSize || null,
+          variantName: selectedVariant || null,
         }),
       });
 
@@ -319,8 +378,8 @@ export default function ProductDetailPage() {
                   onTouchEnd={handleTouchEnd}
               >
                 <img
-                    src={p.images[activeImage]?.url ||
-                        p.images?.[0]?.url ||
+                    src={currentImages[activeImage]?.url ||
+                        currentImages?.[0]?.url ||
                         "/placeholder.png"
                     }
                     alt={p.name}
@@ -329,7 +388,7 @@ export default function ProductDetailPage() {
               </div>
 
               <div className="flex justify-center gap-2 mt-3 lg:hidden">
-                {p.images.map((_, idx) => (
+                {currentImages.map((_, idx) => (
                     <button
                         key={idx}
                         onClick={() => setActiveImage(idx)}
@@ -343,7 +402,7 @@ export default function ProductDetailPage() {
               <button
                   onClick={() =>
                       setActiveImage((prev) =>
-                          prev === 0 ? p.images.length - 1 : prev - 1
+                          prev === 0 ? currentImages.length - 1 : prev - 1
                       )
                   }
                   className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 border-2 border-black px-2 py-8"
@@ -354,7 +413,7 @@ export default function ProductDetailPage() {
               <button
                   onClick={() =>
                       setActiveImage((prev) =>
-                          prev === p.images.length - 1 ? 0 : prev + 1
+                          prev === currentImages.length - 1 ? 0 : prev + 1
                       )
                   }
                   className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 border-2 border-black px-2 py-8"
@@ -377,8 +436,8 @@ export default function ProductDetailPage() {
                   </p>
               )}
 
-              {/* SIZE */}
-              {p.hasSize && (
+              {/* SIZE - For Merch */}
+              {isMerch && p.hasSize && (
                   <div>
                     <div className="flex items-center gap-3 mb-2">
                       <p className="text-base font-bold">SIZE</p>
@@ -412,6 +471,38 @@ export default function ProductDetailPage() {
                           ))
                       }
                     </div>
+                  </div>
+              )}
+
+              {/* VARIANTS - For Other Categories (Combo, Cards, etc.) */}
+              {!isMerch && (
+                  <div>
+                    <p className="text-base font-bold mb-2">VARIANT</p>
+                    <div className="flex gap-4 flex-wrap">
+                      {p.variants
+                          .filter((v) => v.variantName && v.stock > 0)
+                          .map((v) => (
+                              <button
+                                  key={v.variantName}
+                                  onClick={() => setSelectedVariant(v.variantName!)}
+                                  className={`px-4 md:px-6 py-1.5 md:py-2 rounded-full text-sm md:text-base border transition font-medium
+                        ${
+                                      selectedVariant === v.variantName
+                                          ? "bg-[#1F7A1F] text-white"
+                                          : "bg-[#D1E9D4] text-[#5E5E5E]"
+                                  }
+                      `}
+                              >
+                                {v.variantName}
+                              </button>
+                          ))
+                      }
+                    </div>
+                    {selectedVariant && p.variants.find(v => v.variantName === selectedVariant)?.variantDescription && (
+                      <p className="text-sm text-gray-600 mt-2">
+                        {p.variants.find(v => v.variantName === selectedVariant)?.variantDescription}
+                      </p>
+                    )}
                   </div>
               )}
 

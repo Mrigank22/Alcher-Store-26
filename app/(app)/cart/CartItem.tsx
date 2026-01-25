@@ -27,6 +27,7 @@ export default function CartItem({
     };
 
     if (item.size) payload.size = item.size;
+    if (item.variantName) payload.variantName = item.variantName;
     if (item.colour) payload.colour = item.colour;
 
     await fetch("/api/cart", {
@@ -49,6 +50,7 @@ export default function CartItem({
     };
 
     if (item.size) payload.size = item.size;
+    if (item.variantName) payload.variantName = item.variantName;
     if (item.colour) payload.colour = item.colour;
 
     await fetch("/api/cart", {
@@ -88,6 +90,14 @@ export default function CartItem({
             Size:{" "}
             <span className="font-medium text-[#5E5E5E]">
               {item.size}
+            </span>
+          </p>
+        )}
+        {item.variantName && (
+          <p className="text-sm font-medium mt-1 text-[#5E5E5E]">
+            Variant:{" "}
+            <span className="font-medium text-[#5E5E5E]">
+              {item.variantName}
             </span>
           </p>
         )}

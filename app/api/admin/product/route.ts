@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Product from "@/models/Product";
-
-// export async function GET() {
-//   await connectDB();
-//   const products = await Product.find();
-//   return Response.json(products);
-// }
-
+import ProductCategory from "@/models/ProductCategory";
 import Media from "@/models/Media";
 
 export async function GET() {
   await connectDB();
 
   const products = await Product.find().lean();
+  const categories = await ProductCategory.find().lean();
+  
+  const categoryMap: Record<string, any> = {};
+  categories.forEach((cat) => {
+    categoryMap[String(cat._id)] = cat;
+  });
 
   const imageIds = products.flatMap((p) => p.images || []);
 
@@ -32,6 +32,7 @@ export async function GET() {
 
   const enrichedProducts = products.map((p) => ({
     ...p,
+    category: p.category ? categoryMap[String(p.category)] : null,
     images: (p.images || [])
       .map((id: any) => mediaMap[String(id)])
       .filter(Boolean),

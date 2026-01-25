@@ -4,6 +4,8 @@ import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import Footer from "@/components/Footer";
 import MerchBox from "@/components/MerchBox" ;
+import ComboSection from "@/components/ComboSection";
+import CatalogueCarousel from "@/components/CatalogueCarousel";
 import PromoGrid from "@/components/PromoGrid"
 import Newsletter from "@/components/Newsletter";
 import StarReviewCard from "@/components/reviews/StarReviewCard";
@@ -135,6 +137,44 @@ export default function Home() {
       </div>
 
       <MerchBox showHeading={true}/>
+
+      {/* ===== NEW CLOWN DIALOGUE BETWEEN MERCH AND COMBO ===== */}
+      <div className="relative w-full flex justify-center items-end z-40 bg-[#F0FAF0] pb-0">
+        <div className="relative flex items-end gap-4 sm:gap-6">
+
+          {/* Clown 2 - LEFT SIDE */}
+          <div className="relative w-28 h-36 sm:w-36 sm:h-44 md:w-40 md:h-52 lg:w-48 lg:h-60">
+            <Image src="/clown2.png" alt="Clown" fill className="object-contain object-bottom" />
+          </div>
+
+          {/* Dialogue box 2 - RIGHT SIDE */}
+          <div className="relative z-50 mb-8 sm:mb-12">
+            <div className="relative w-[250px] sm:w-[350px] md:w-[450px] lg:w-[500px] h-[70px] sm:h-[90px] md:h-[100px] lg:h-[110px]">
+              <Image src="/dialogue-box2.png" alt="Dialogue" fill className="object-contain" />
+              <div className="absolute inset-0 flex items-center justify-center px-6 sm:px-8 md:px-10">
+               <h3
+                className="
+                  font-gotham font-black text-[#052e16] uppercase text-center
+                  text-xs sm:text-sm md:text-base lg:text-lg
+                  tracking-wider
+                "
+              >
+                Wanna see something new ?!
+              </h3>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* ===== SEPARATOR LINE ===== */}
+      <div className="w-full bg-[#F0FAF0]">
+        <div className="border-t-2 border-gray-300"></div>
+      </div>
+
+      <ComboSection />
+      <CatalogueCarousel />
       <PromoGrid/>
 
       <section className="relative min-h-screen bg-[#021B02] pt-20 overflow-x-hidden">

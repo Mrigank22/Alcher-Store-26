@@ -167,11 +167,16 @@ function generateInvoiceContent(doc: PDFKit.PDFDocument, order: any) {
       .text(item.productName, 27, yPos, { width: 240 });
 
     yPos += 13;
+    const isMerch = item.category === 'Merch';
+    const variantInfo = isMerch 
+      ? (item.size ? `, Size ${item.size}` : '')
+      : (item.variantName ? `, ${item.variantName}` : '');
+    
     doc
       .font("Helvetica")
       .fontSize(8)
       .fillColor("#666666")
-      .text(`${item.productType || ''}${item.size ? `, Size ${item.size}` : ''}`, 27, yPos, { width: 240 });
+      .text(`${item.productType || ''}${variantInfo}`, 27, yPos, { width: 240 });
 
     doc
       .font("Helvetica")

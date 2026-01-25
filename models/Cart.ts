@@ -5,6 +5,7 @@ const CartItem = new Schema(
     {
         product:{type:Schema.Types.ObjectId,ref:"Product",required:true},
         size:{type:String},
+        variantName:{type:String}, // For non-Merch categories
         colour:{type:String},
         quantity :{type: Number, required:true,min:1,default: 1},
         price:{ type:Number,required:true}

@@ -4,6 +4,13 @@ export const Orders: CollectionConfig = {
   slug: 'orders',
   admin: {
     useAsTitle: 'orderId',
+    defaultColumns: ['orderId', 'user', 'status', 'totalAmount', 'orderDate'],
+  },
+  access: {
+    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true, // Enable delete functionality
   },
   fields: [
     {
@@ -49,6 +56,8 @@ export const Orders: CollectionConfig = {
         { name: 'productType', type: 'text' },
         { name: 'quantity', type: 'number', min: 1, required: true },
         { name: 'size', type: 'text' },
+        { name: 'variantName', type: 'text', admin: { description: 'For non-Merch categories: Set 1, Set 2, etc.' } },
+        { name: 'category', type: 'text', admin: { description: 'Category snapshot: Merch, Combo, Cards, etc.' } },
         { name: 'colour', type: 'text' },
         { name: 'price', type: 'number', required: true },
         { name: 'subtotal', type: 'number', required: true },
