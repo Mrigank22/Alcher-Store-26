@@ -32,6 +32,7 @@ import { NextResponse } from "next/server";
 interface ProductDoc {
   images?: string[];
   category?: any;
+  variants?: any[];
 }
 
 export async function GET(
