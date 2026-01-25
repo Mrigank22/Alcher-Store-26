@@ -65,9 +65,14 @@ export async function GET(
     }
   }
 
-  // 🔑 Fetch related media
+  // 🔑 Fetch related media (product-level + variant-level)
+  const allImageIds = [
+    ...(product.images || []),
+    ...(product.variants || []).flatMap((v: any) => v.images || [])
+  ];
+  
   const mediaDocs = await Media.find({
-    _id: { $in: product.images || [] },
+    _id: { $in: allImageIds },
   }).lean();
 
   // 🔁 Map mediaId → media object
@@ -75,18 +80,24 @@ export async function GET(
   for (const m of mediaDocs) {
     mediaMap[String(m._id)] = {
       id: m._id,
-      url: `/api/media/${m.filename}`, // ✅ THIS is why images now work
+      url: `/api/media/${m.filename}`,
       alt: m.alt || "",
     };
   }
 
-  // 🔄 Replace image IDs with media objects
+  // 🔄 Replace image IDs with media objects in product and variants
   const enrichedProduct = {
     ...product,
     category,
     images: (product.images || [])
       .map((id) => mediaMap[String(id)])
       .filter(Boolean),
+    variants: (product.variants || []).map((v: any) => ({
+      ...v,
+      images: (v.images || [])
+        .map((id: any) => mediaMap[String(id)])
+        .filter(Boolean),
+    })),
   };
 
   return NextResponse.json(enrichedProduct);
