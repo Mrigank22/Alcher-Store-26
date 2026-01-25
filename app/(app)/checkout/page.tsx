@@ -16,6 +16,10 @@ interface CartItem {
     images: string[];
     primaryImageIndex?: number;
     price: number;
+    category?: {
+      _id: string;
+      name: string;
+    };
   };
   quantity: number;
   size: string | null;
@@ -65,21 +69,23 @@ function CheckoutContent() {
       (sum, item) => sum + item.price * item.quantity,
       0
     );
-    const shipping = deliveryFee;
+    
+    // Calculate delivery fee: 100 if any item is Merch category, otherwise 0
+    const hasMerchItems = items.some(item => item.product?.category?.name === 'Merch');
+    const shipping = hasMerchItems ? 100 : 0;
+    
     const taxAmount = 0;
     const totalAmount = sub + shipping + taxAmount;
 
     setSubtotal(sub);
     setShippingCost(shipping);
+    setDeliveryFee(shipping);
     setTax(taxAmount);
     setTotal(totalAmount);
   };
   const fetchCart = async () => {
     try {
       if (!session?.user?.email) return;
-
-      // Set delivery fee to 1 rupee
-      setDeliveryFee(100);
 
       // Start progress simulation
       const progressInterval = setInterval(() => {

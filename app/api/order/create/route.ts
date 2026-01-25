@@ -147,6 +147,8 @@ export async function POST(req: NextRequest) {
         productType: item.product.productType,
         quantity: item.quantity,
         size: item.size,
+        variantName: item.variantName, // For non-Merch categories
+        category: item.product.category?.name, // Category name snapshot
         colour: item.colour,
         price: item.price,
         subtotal: item.price * item.quantity,

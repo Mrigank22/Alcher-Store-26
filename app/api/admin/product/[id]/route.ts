@@ -25,11 +25,13 @@
 // // }
 import { connectDB } from "@/lib/mongodb";
 import Product from "@/models/Product";
+import ProductCategory from "@/models/ProductCategory";
 import Media from "@/models/Media";
 import { NextResponse } from "next/server";
 
 interface ProductDoc {
   images?: string[];
+  category?: any;
 }
 
 export async function GET(
@@ -51,6 +53,18 @@ export async function GET(
     );
   }
 
+  // 🔑 Fetch category if exists
+  let category = null;
+  if (product.category) {
+    const categoryDoc = await ProductCategory.findById(product.category).lean();
+    if (categoryDoc) {
+      category = {
+        _id: categoryDoc._id,
+        name: categoryDoc.name,
+      };
+    }
+  }
+
   // 🔑 Fetch related media
   const mediaDocs = await Media.find({
     _id: { $in: product.images || [] },
@@ -69,6 +83,7 @@ export async function GET(
   // 🔄 Replace image IDs with media objects
   const enrichedProduct = {
     ...product,
+    category,
     images: (product.images || [])
       .map((id) => mediaMap[String(id)])
       .filter(Boolean),
