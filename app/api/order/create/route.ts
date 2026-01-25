@@ -66,8 +66,14 @@ export async function POST(req: NextRequest) {
 
     // Get user's cart - either TempCart (for direct buy) or regular Cart
     const cart = isDirect
-      ? await TempCart.findOne({ user_email: session.user.email }).populate("items.product")
-      : await Cart.findOne({ user_email: session.user.email }).populate("items.product");
+      ? await TempCart.findOne({ user_email: session.user.email }).populate({
+          path: "items.product",
+          populate: { path: "category" }
+        })
+      : await Cart.findOne({ user_email: session.user.email }).populate({
+          path: "items.product",
+          populate: { path: "category" }
+        });
 
     if (!cart || cart.items.length === 0) {
       return NextResponse.json(
@@ -140,16 +146,23 @@ export async function POST(req: NextRequest) {
         }
       }
       
+      console.log('Cart item:', {
+        productName: item.product.name,
+        size: item.size,
+        variantName: item.variantName,
+        category: item.product.category?.name
+      });
+      
       return {
         product: item.product._id,
         productName: item.product.name,
         productImage: imageUrl,
         productType: item.product.productType,
         quantity: item.quantity,
-        size: item.size,
-        variantName: item.variantName, // For non-Merch categories
-        category: item.product.category?.name, // Category name snapshot
-        colour: item.colour,
+        size: item.size || null,
+        variantName: item.variantName || null,
+        category: item.product.category?.name || null,
+        colour: item.colour || null,
         price: item.price,
         subtotal: item.price * item.quantity,
       };
