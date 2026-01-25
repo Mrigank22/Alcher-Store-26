@@ -56,7 +56,7 @@ export async function GET(
   // 🔑 Fetch category if exists
   let category = null;
   if (product.category) {
-    const categoryDoc = await ProductCategory.findById(product.category).lean();
+    const categoryDoc = await ProductCategory.findById(product.category).lean<{ _id: any; name: string }>();
     if (categoryDoc) {
       category = {
         _id: categoryDoc._id,
