@@ -60,7 +60,7 @@ export default function ProductCard({ product }: { product: Product }) {
   src={imageSrc}
   alt={product.name}
   fill
-  className="object-contain z-[1]"
+  className="object-contain z-[1] p-4"
   sizes="(max-width: 768px) 100vw, 460px"
 />
 
