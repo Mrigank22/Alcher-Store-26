@@ -84,12 +84,9 @@ const DeliveryDashboard = () => {
       escapeCSV(order.paymentMethod),
       escapeCSV(order.totalAmount),
       escapeCSV(new Date(order.orderDate).toLocaleDateString()),
-      escapeCSV(order.items.map(item => {
-        const variant = item.category === 'Merch' 
-          ? `Size: ${item.size || 'N/A'}`
-          : `Variant: ${item.variantName || 'N/A'}`;
-        return `${item.productName} (Qty: ${item.quantity}, ${variant})`;
-      }).join('; ')),
+      escapeCSV(order.items.map(item => 
+        `${item.productName} (Qty: ${item.quantity}, Size: ${item.size || 'N/A'}, Variant: ${item.variantName || 'N/A'})`
+      ).join('; ')),
       escapeCSV(order.notes || ''),
     ]);
 
@@ -147,14 +144,11 @@ const DeliveryDashboard = () => {
                 </td>
                 <td className="py-2 px-4 border-b">
                   <ul>
-                    {order.items.map((item, index) => {
-                      const variantInfo = item.category === 'Merch'
-                        ? `Size: ${item.size || 'N/A'}`
-                        : `Variant: ${item.variantName || 'N/A'}`;
-                      return (
-                        <li key={index}>{`${item.productName} (x${item.quantity}) - ${variantInfo}`}</li>
-                      );
-                    })}
+                    {order.items.map((item, index) => (
+                      <li key={index}>
+                        {`${item.productName} (x${item.quantity}) - Size: ${item.size || 'N/A'}, Variant: ${item.variantName || 'N/A'}`}
+                      </li>
+                    ))}
                   </ul>
                 </td>
                 <td className="py-2 px-4 border-b">
