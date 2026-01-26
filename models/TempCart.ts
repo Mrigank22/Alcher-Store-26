@@ -6,6 +6,7 @@ import mongoose, { Schema, models } from "mongoose";
 const TempCartItem = new Schema({
   product: { type: Schema.Types.ObjectId, ref: "Product", required: true },
   size: { type: String },
+  variantName: { type: String },
   colour: { type: String }, // Included to match team's structure
   quantity: { type: Number, required: true, min: 1, default: 1 },
   price: { type: Number, required: true }, // Snapshot of price at that moment

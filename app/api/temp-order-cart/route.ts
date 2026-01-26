@@ -17,25 +17,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 1. READ ALL DATA (Including Colour!)
-    const { productId, size, colour, quantity } = await req.json(); 
+    // 1. READ ALL DATA (Including Colour and variantName!)
+    const { productId, size, variantName, colour, quantity } = await req.json(); 
 
     if (!productId || !quantity) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
     await connectDB();
-    const productDoc = await Product.findOne({ product_id: productId }) || await Product.findById(productId);
+    const productDoc = await Product.findOne({ product_id: productId }).populate('category') 
+      || await Product.findById(productId).populate('category');
 
     if (!productDoc) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
     // 2. CHECK STOCK (Team's Variant Logic)
+    const isMerch = productDoc.category?.name === 'Merch';
     const selectedVariant = productDoc.variants.find(
       (v: any) => 
-        (!productDoc.hasSize || v.size === size) &&
-        (!productDoc.hasColor || v.color === colour) // <--- Fixed: using 'colour' variable
+        (isMerch ? (!productDoc.hasSize || v.size === size) : v.variantName === variantName) &&
+        (!productDoc.hasColor || v.color === colour)
     );
 
     if (!selectedVariant) {
@@ -55,10 +57,11 @@ export async function POST(req: Request) {
         tempCart = new TempCart({ user_email: session.user.email });
     }
 
-    // 4. SAVE ITEM (Include Colour!)
+    // 4. SAVE ITEM (Include Colour and variantName!)
     tempCart.items.push({
         product: productDoc._id,
         size: size || null,
+        variantName: variantName || null,
         colour: colour || null, // <--- Saving colour correctly now
         quantity: Number(quantity),
         price: productDoc.price
