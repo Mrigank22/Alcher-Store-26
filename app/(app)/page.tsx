@@ -54,7 +54,7 @@ export default function Home() {
               transition-opacity
               duration-700
 
-              object-cover
+              object-contain
               object-center
               ${index === current ? "opacity-100 z-10" : "opacity-0 z-0"}
             `}
