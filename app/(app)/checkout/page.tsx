@@ -53,6 +53,7 @@ function CheckoutContent() {
   const [deliveryFee, setDeliveryFee] = useState(100);
   const [tax, setTax] = useState(0);
   const [total, setTotal] = useState(0);
+  const [isCampusDelivery, setIsCampusDelivery] = useState(false);
 
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     name: "",
@@ -64,15 +65,13 @@ function CheckoutContent() {
     state: "",
     pincode: "",
   });
-  const calculateTotals = (items: CartItem[]) => {
+  const calculateTotals = (items: CartItem[], campusDelivery = isCampusDelivery) => {
     const sub = items.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     );
     
-    // Calculate delivery fee: 100 if any item is Merch category, otherwise 0
-    const hasMerchItems = items.some(item => item.product?.category?.name === 'Merch');
-    const shipping = hasMerchItems ? 100 : 0;
+    const shipping = campusDelivery ? 0 : 100;
     
     const taxAmount = 0;
     const totalAmount = sub + shipping + taxAmount;
@@ -491,6 +490,24 @@ function CheckoutContent() {
                       <span>Total</span>
                       <span className="text-[#2D5F2E]">₹{total.toFixed(2)}</span>
                     </div>
+                  </div>
+
+                  {/* Campus Delivery Checkbox */}
+                  <div className="mb-4 pb-4 border-b">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isCampusDelivery}
+                        onChange={(e) => {
+                          setIsCampusDelivery(e.target.checked);
+                          calculateTotals(cartItems, e.target.checked);
+                        }}
+                        className="w-4 h-4 text-[#2D5F2E] border-gray-300 rounded focus:ring-[#2D5F2E]"
+                      />
+                      <span className="text-sm text-gray-700">
+                        Delivery within IIT Guwahati campus (Free delivery)
+                      </span>
+                    </label>
                   </div>
 
                   {/* Coupon Section */}
