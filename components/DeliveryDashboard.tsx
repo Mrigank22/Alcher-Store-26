@@ -9,6 +9,8 @@ interface Order {
     productName: string;
     quantity: number;
     size: string;
+    variantName?: string;
+    category?: string;
   }[];
   shippingAddress: {
     name: string;
@@ -63,18 +65,32 @@ const DeliveryDashboard = () => {
       'Notes',
     ];
 
+    const escapeCSV = (value: string | number) => {
+      const str = String(value);
+      // If value contains comma, quote, or newline, wrap in quotes and escape quotes
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
     const rows = orders.map(order => [
-      order.orderId,
-      order.shippingAddress.name,
-      order.shippingAddress.phone,
-      `${order.shippingAddress.addressLine1}${order.shippingAddress.addressLine2 ? `, ${order.shippingAddress.addressLine2}` : ''}`,
-      order.shippingAddress.city,
-      order.shippingAddress.pincode,
-      order.paymentMethod,
-      order.totalAmount,
-      new Date(order.orderDate).toLocaleDateString(),
-      order.items.map(item => `${item.productName} (Qty: ${item.quantity}, Size: ${item.size || 'N/A'})`).join('; '),
-      order.notes || '',
+      escapeCSV(order.orderId),
+      escapeCSV(order.shippingAddress.name),
+      escapeCSV(order.shippingAddress.phone),
+      escapeCSV(`${order.shippingAddress.addressLine1}${order.shippingAddress.addressLine2 ? `, ${order.shippingAddress.addressLine2}` : ''}`),
+      escapeCSV(order.shippingAddress.city),
+      escapeCSV(order.shippingAddress.pincode),
+      escapeCSV(order.paymentMethod),
+      escapeCSV(order.totalAmount),
+      escapeCSV(new Date(order.orderDate).toLocaleDateString()),
+      escapeCSV(order.items.map(item => {
+        const variant = item.category === 'Merch' 
+          ? `Size: ${item.size || 'N/A'}`
+          : `Variant: ${item.variantName || 'N/A'}`;
+        return `${item.productName} (Qty: ${item.quantity}, ${variant})`;
+      }).join('; ')),
+      escapeCSV(order.notes || ''),
     ]);
 
     let csvContent = "data:text/csv;charset=utf-8," 
@@ -131,9 +147,14 @@ const DeliveryDashboard = () => {
                 </td>
                 <td className="py-2 px-4 border-b">
                   <ul>
-                    {order.items.map((item, index) => (
-                      <li key={index}>{`${item.productName} (x${item.quantity}) - Size: ${item.size || 'N/A'}`}</li>
-                    ))}
+                    {order.items.map((item, index) => {
+                      const variantInfo = item.category === 'Merch'
+                        ? `Size: ${item.size || 'N/A'}`
+                        : `Variant: ${item.variantName || 'N/A'}`;
+                      return (
+                        <li key={index}>{`${item.productName} (x${item.quantity}) - ${variantInfo}`}</li>
+                      );
+                    })}
                   </ul>
                 </td>
                 <td className="py-2 px-4 border-b">
