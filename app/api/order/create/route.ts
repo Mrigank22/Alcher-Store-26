@@ -146,13 +146,6 @@ export async function POST(req: NextRequest) {
         }
       }
       
-      console.log('Cart item:', {
-        productName: item.product.name,
-        size: item.size,
-        variantName: item.variantName,
-        category: item.product.category?.name
-      });
-      
       return {
         product: item.product._id,
         productName: item.product.name,
